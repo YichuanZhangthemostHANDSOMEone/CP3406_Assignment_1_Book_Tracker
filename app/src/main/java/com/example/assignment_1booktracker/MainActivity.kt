@@ -271,25 +271,31 @@ fun BottomNavigationBar() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(bottomNavHeight)
+            .height(bottomNavHeight),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
         ElevatedButton(
-            onClick = { /* Handle Library click */ },
+            onClick = {},
+            modifier = Modifier
+                .size(width = 150.dp, height = 50.dp),
             colors = ButtonDefaults.elevatedButtonColors(
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-            )
+            ),
+
         ) {
             Text(text = "Library")
         }
         ElevatedButton(
-            onClick = { /* Handle Recommend click */ },
+            onClick = {},
+            modifier = Modifier
+                .size(width = 150.dp, height = 50.dp),
             colors = ButtonDefaults.elevatedButtonColors(
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-            )
+            ),
+
         ) {
             Text(text = "Recommend")
         }
