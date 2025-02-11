@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -50,6 +51,7 @@ class MainActivity2 : ComponentActivity() {
             Assignment_1BookTrackerTheme {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
+                    bottomBar = { PersonalReview() }
                 ) { innerPadding ->
                     BookDetails(modifier = Modifier.padding(innerPadding))
                 }
@@ -266,6 +268,47 @@ fun MarkedPoints(){
     }
 }
 
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PersonalReview() {
+    var showBottomSheet by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = false
+    )
+
+    BottomAppBar(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(LocalConfiguration.current.screenHeightDp.dp * 0.1f),
+        containerColor = MaterialTheme.colorScheme.primary
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Button(
+                onClick = { showBottomSheet = true },
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onPrimary)
+            ) {
+                Text("Display partial bottom sheet")
+            }
+        }
+    }
+    if (showBottomSheet) {
+        ModalBottomSheet(
+            modifier = Modifier.fillMaxHeight(),
+            sheetState = sheetState,
+            onDismissRequest = { showBottomSheet = false }
+        ) {
+            Text(
+                "Write your personal review here.",
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+    }
+}
 
 
 @Preview(showBackground = true)
