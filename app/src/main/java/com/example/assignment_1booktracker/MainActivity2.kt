@@ -31,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.sp
 
 class MainActivity2 : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,6 +58,9 @@ fun BookDetails() {
             .padding(16.dp)
     ) {
         item {
+            Spacer(modifier = Modifier.height(10.dp))
+        }
+        item {
             PercentageCard()
         }
         item {
@@ -65,13 +69,14 @@ fun BookDetails() {
         item {
             RatingView()
         }
+
     }
 }
 
 @Composable
 fun PercentageCard() {
     val configuration = LocalConfiguration.current
-    val screenHeightDp = configuration.screenHeightDp
+    val cardHeight = (configuration.screenHeightDp * 0.2f).dp
 
     var leftInput by remember { mutableStateOf("93") }
     var rightInput by remember { mutableStateOf("168") }
@@ -81,52 +86,50 @@ fun PercentageCard() {
     val progress = if (rightValue != 0f) (leftValue / rightValue).coerceIn(0f, 1f) else 0f
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.TopCenter
     ) {
         Card(
-            modifier = Modifier
-                .fillMaxWidth(0.9f)
-                .fillMaxHeight(0.15f)
-                .align(Alignment.TopCenter)
-                .offset(y = (screenHeightDp * 0.05f).dp),
+            shape = RoundedCornerShape(8.dp),
             elevation = CardDefaults.cardElevation(8.dp),
-            shape = RoundedCornerShape(8.dp)
+            modifier = Modifier
+                .fillMaxWidth(1f)
+                .height(cardHeight)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(8.dp)
+                    .padding(16.dp)
             ) {
                 Row(
                     modifier = Modifier
-                        .weight(0.45f)
-                        .fillMaxWidth()
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextField(
                         value = leftInput,
                         onValueChange = { leftInput = it },
                         label = { Text("Read pages") },
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(end = 4.dp)
+                        modifier = Modifier.weight(1f)
                     )
+                    Spacer(modifier = Modifier.width(2.dp))
                     VerticalDivider(color = MaterialTheme.colorScheme.secondary)
+                    Spacer(modifier = Modifier.width(2.dp))
                     TextField(
                         value = rightInput,
                         onValueChange = { rightInput = it },
                         label = { Text("Total pages") },
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(start = 4.dp)
+                        modifier = Modifier.weight(1f)
                     )
                 }
+                Spacer(modifier = Modifier.height(8.dp))
+                // 下半部分：进度条显示左侧数值占右侧数值的比例
                 LinearProgressIndicator(
                     progress = progress,
                     modifier = Modifier
-                        .weight(0.5f)
+                        .weight(0.45f)
                         .fillMaxWidth()
-                        .padding(top = 12.dp, bottom = 10.dp)
                 )
             }
         }
@@ -135,44 +138,40 @@ fun PercentageCard() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RatingView(){
+fun RatingView() {
     val configuration = LocalConfiguration.current
-    val screenHeightDp = configuration.screenHeightDp
+    val containerHeight = (configuration.screenHeightDp * 0.05f).dp
+    var rating by remember { mutableStateOf("") }
 
-    // 定义评分输入框的状态
-    var ratingInput by remember { mutableStateOf("") }
-
-    // 此 Box 占据父布局中 15% 的高度
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .height(containerHeight)
     ) {
+        // 使用 Row 将文本和输入框水平排列，并居中显示
         Row(
+            modifier = Modifier
+                .fillMaxSize(),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxSize()
+            horizontalArrangement = Arrangement.Absolute.Right
         ) {
-            // "Rating:" 文本，加粗显示
             Text(
                 text = "Rating:",
-                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
             )
             Spacer(modifier = Modifier.width(8.dp))
-            // 输入框，不需要特别的下划线样式，满足输入需求即可
             TextField(
-                value = ratingInput,
-                onValueChange = { ratingInput = it },
-                modifier = Modifier.width(40.dp).height(15.dp),
+                value = rating,
+                onValueChange = { rating = it },
+                modifier = Modifier.width(60.dp).height(15.dp),
+                singleLine = true,
                 colors = TextFieldDefaults.textFieldColors(
-                    // 设置背景透明，让 TextField 看起来只有下划线
                     containerColor = Color.Transparent,
-                    // 可聚焦状态下下划线颜色
                     focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                    // 未聚焦状态下下划线颜色
                     unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                )
             )
-            // 固定文本 "/10"
+            )
+            Spacer(modifier = Modifier.width(8.dp))
             Text(text = "/10")
         }
     }
@@ -186,3 +185,4 @@ fun CommentPreview() {
         BookDetails()
     }
 }
+
