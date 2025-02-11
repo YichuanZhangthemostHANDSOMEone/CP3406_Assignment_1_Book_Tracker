@@ -81,7 +81,7 @@ fun BookTracking(modifier: Modifier = Modifier) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(titleHeight)  // 使用计算后的高度
+                    .height(titleHeight)
             ) {
                 Text(
                     text = "My Library",

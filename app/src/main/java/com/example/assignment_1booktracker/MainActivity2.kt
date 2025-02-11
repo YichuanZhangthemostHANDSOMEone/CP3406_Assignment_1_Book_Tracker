@@ -1,6 +1,7 @@
 package com.example.assignment_1booktracker
 
 import android.os.Bundle
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -13,16 +14,23 @@ import androidx.core.view.WindowInsetsCompat
 import com.example.assignment_1booktracker.ui.theme.Assignment_1BookTrackerTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.VerticalDivider
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalConfiguration
@@ -33,7 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 
-class MainActivity2 : AppCompatActivity() {
+class MainActivity2 : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // 确保 enableEdgeToEdge() 方法存在
@@ -43,15 +51,20 @@ class MainActivity2 : AppCompatActivity() {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                 ) { innerPadding ->
-                    BookTracking(modifier = Modifier.padding(innerPadding))
+                    BookDetails(modifier = Modifier.padding(innerPadding))
                 }
             }
         }
     }
 }
 
+data class CardContent(
+    val story: String,
+    val page: String
+)
+
 @Composable
-fun BookDetails() {
+fun BookDetails(modifier: Modifier = Modifier) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -69,7 +82,9 @@ fun BookDetails() {
         item {
             RatingView()
         }
-
+        item{
+            MarkedPoints()
+        }
     }
 }
 
@@ -176,6 +191,81 @@ fun RatingView() {
         }
     }
 }
+
+
+@Composable
+fun MarkedPoints(){
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(60.dp),
+        contentAlignment = Alignment.BottomStart
+    ){
+        Text(
+            text = "Critical points",
+            style = MaterialTheme.typography.titleLarge.copy(
+                fontSize = 40.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+        )
+    }
+    val cardContents = listOf(
+        CardContent(story = "Revolution Outreach", page = "Page: 30"),
+        CardContent(story = "Contacts Alien", page = "Page: 78"),
+        CardContent(story = "Unstable World", page = "Page: 106"),
+        CardContent(story = "Three-Body Chaos", page = "Page: 123"),
+        CardContent(story = "Alien Invasion", page = "Page: 145"),
+        CardContent(story = "Cosmic Enigma", page = "Page: 159")
+    )
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        cardContents.forEach { item ->
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                elevation = CardDefaults.cardElevation(4.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Spacer(modifier = Modifier.weight(0.1f))
+
+                    Box(
+                        modifier = Modifier.weight(0.35f),
+                        contentAlignment = Alignment.CenterStart
+                    ) {
+                        Text(
+                            text = item.story,
+                            style = MaterialTheme.typography.displaySmall.copy(fontSize = 20.sp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.weight(0.1f))
+
+                    Box(
+                        modifier = Modifier.weight(0.35f),
+                        contentAlignment = Alignment.CenterEnd
+                    ) {
+                        Text(
+                            text = item.page,
+                            style = MaterialTheme.typography.displaySmall.copy(fontSize = 20.sp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.weight(0.1f))
+                }
+            }
+        }
+    }
+}
+
 
 
 @Preview(showBackground = true)
