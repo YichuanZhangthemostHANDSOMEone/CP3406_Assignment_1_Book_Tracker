@@ -127,6 +127,35 @@ fun RecommendedBooks_1(
     }
 }
 
+@Composable
+fun RecommendedBooks_2(
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        val books = listOf(
+            Book(
+                image = painterResource(id = R.drawable.i_robot_sci),
+                leftText = "I Robot",
+                rightText = "Rate:9/10"
+            ),
+            Book(
+                image = painterResource(id = R.drawable.the_help_historical_fiction),
+                leftText = "The Help",
+                rightText = "Rate:8/10"
+            ),
+
+            )
+
+        Row(
+            modifier = modifier.padding(horizontal = 3.dp, vertical = 8.dp)
+        ) {
+            books.forEach { book ->
+                BookCard(modifier = Modifier, book = book)
+            }
+        }
+    }
+}
+
 
 
 @Composable
