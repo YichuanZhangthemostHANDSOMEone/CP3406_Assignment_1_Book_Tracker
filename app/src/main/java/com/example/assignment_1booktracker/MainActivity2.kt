@@ -141,7 +141,6 @@ fun PercentageCard() {
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                // 下半部分：进度条显示左侧数值占右侧数值的比例
                 LinearProgressIndicator(
                     progress = progress,
                     modifier = Modifier
@@ -165,7 +164,6 @@ fun RatingView() {
             .fillMaxWidth()
             .height(containerHeight)
     ) {
-        // 使用 Row 将文本和输入框水平排列，并居中显示
         Row(
             modifier = Modifier
                 .fillMaxSize(),
@@ -290,9 +288,10 @@ fun PersonalReview() {
         ) {
             Button(
                 onClick = { showBottomSheet = true },
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onPrimary)
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onPrimary,
+                    contentColor = MaterialTheme.colorScheme.primary)
             ) {
-                Text("Display partial bottom sheet")
+                Text("Personal Review")
             }
         }
     }
