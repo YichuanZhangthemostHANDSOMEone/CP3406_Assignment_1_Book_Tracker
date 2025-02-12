@@ -223,7 +223,23 @@ fun Details(book: RecommendedBook){
                         style = MaterialTheme.typography.headlineLarge
                     )
                 }
-
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.Top,
+                    horizontalAlignment = Alignment.Start
+                ) {
+                    Text(
+                        text = "    Wolf Hall focuses on Thomas Cromwell and tells the story of his meteoric rise from the abused son of a blacksmith to self-made man to right-hand adviser to Henry VIII. Through his eyes we get to see many of the familiar faces of the era: Cardinal Wolsey, Sir Thomas More, Anne Boleyn, the Dukes of Suffolk and Norfolk, Thomas Cranmer, and of course, Henry himself. (It says something about that era that I think of that list 50% of them ended up beheaded.)",
+                        style = MaterialTheme.typography.bodyLarge.copy(fontStyle = FontStyle.Italic),
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "    The writing style of Wolf Hall is idiosyncratic and thus I found it hard to get into, at first. I’m a bit embarrassed to admit that I am terrible with identifying narrative styles unless they are pretty basic: first person present tense, first person past tense, etc. I just knew I found the style in this novel confusing. So I looked it up: Wolf Hall is written in third person limited present tense. The reader gets Cromwell’s POV only, though it takes a while for that to be totally clear.",
+                        style = MaterialTheme.typography.bodyLarge.copy(fontStyle = FontStyle.Italic),
+                    )
+                }
 
             }
 
