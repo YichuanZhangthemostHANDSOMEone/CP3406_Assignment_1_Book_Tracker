@@ -242,7 +242,6 @@ fun Details(book: RecommendedBook){
                 }
 
             }
-
         }
     }
 }
