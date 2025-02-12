@@ -25,6 +25,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -41,6 +42,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
@@ -65,6 +67,8 @@ class MainActivity4 : ComponentActivity() {
 data class RecommendedBook(
     val image: Painter,
     val name: String,
+    val bookCategory: String,
+    val author: String,
 )
 
 @Composable
@@ -72,6 +76,8 @@ fun BookInfo(modifier: Modifier = Modifier) {
     val book = RecommendedBook(
             image = painterResource(id = R.drawable.wolf_hall_historical_fiction),
             name = "Wolf Hall",
+            bookCategory = "Historical Fiction",
+            author = "Margaret Atwood"
         )
     LazyColumn(
         modifier = Modifier
@@ -90,7 +96,7 @@ fun BookInfo(modifier: Modifier = Modifier) {
             }
         }
         item {
-            Spacer(modifier = Modifier.height(10.dp))
+            Details(book = book)
         }
     }
 }
@@ -138,7 +144,92 @@ fun BookCard(modifier: Modifier = Modifier, book: RecommendedBook) {
 }
 
 
+@Composable
+fun Details(book: RecommendedBook){
+    val configuration = LocalConfiguration.current
+    val InfoContainerHeight = (configuration.screenHeightDp * 0.045f).dp
 
+    Column(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+        ){
+            Column(modifier = Modifier.fillMaxSize()){
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(InfoContainerHeight),
+                    horizontalArrangement = Arrangement.Start,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Author:",
+                        style = MaterialTheme.typography.displayMedium.copy(fontSize = 20.sp),
+                        modifier = Modifier.offset(y = (-9).dp)
+                    )
+                    Text(
+                        text = book.author,
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(start = 5.dp)
+                    )
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(InfoContainerHeight),
+                    horizontalArrangement = Arrangement.Start,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Category:",
+                        style = MaterialTheme.typography.displayMedium.copy(fontSize = 20.sp),
+                        modifier = Modifier.offset(y = (-8).dp)
+
+                    )
+                    Text(
+                        text = book.bookCategory,
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(start = 5.dp)
+                    )
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(InfoContainerHeight),
+                    horizontalArrangement = Arrangement.Start,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Recommend base on:",
+                        style = MaterialTheme.typography.displayMedium.copy(fontSize = 20.sp),
+                        modifier = Modifier.offset(y = (-8).dp)
+                    )
+                    Text(
+                        text = "Homeseeking",
+                        style = MaterialTheme.typography.bodyLarge.copy(fontStyle = FontStyle.Italic),
+                        modifier = Modifier.padding(start = 5.dp)
+                    )
+                }
+                HorizontalDivider(thickness = 2.dp)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(InfoContainerHeight),
+                    horizontalArrangement = Arrangement.Start,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Reasons:",
+                        style = MaterialTheme.typography.headlineLarge
+                    )
+                }
+
+
+            }
+
+        }
+    }
+}
 
 
 @Preview(showBackground = true)
