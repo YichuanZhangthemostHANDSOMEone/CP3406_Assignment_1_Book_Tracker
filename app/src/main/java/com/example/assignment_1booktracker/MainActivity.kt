@@ -36,6 +36,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarDefaults
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.assignment_1booktracker.ui.theme.Assignment_1BookTrackerTheme
 
 
@@ -46,9 +60,10 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             Assignment_1BookTrackerTheme {
+                val navController = rememberNavController()
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
-                    bottomBar = { BottomNavigationBar() }
+                    bottomBar = { BottomNavigationBar(navController) }
                 ){ innerPadding ->
                     BookTracking(
                         modifier = Modifier.padding(innerPadding)
@@ -264,40 +279,32 @@ fun CardView(modifier: Modifier = Modifier, book: Book) {
 }
 
 @Composable
-fun BottomNavigationBar() {
-    val configuration = LocalConfiguration.current
-    val screenHeight = configuration.screenHeightDp.dp
-    val bottomNavHeight = screenHeight * 0.1f
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(bottomNavHeight),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.CenterVertically
+fun BottomNavigationBar(navController: NavController) {
+    val items = listOf("Library", "Recommend")
+    var selectedIndex by remember { mutableStateOf(0) }
+
+    NavigationBar(
+        containerColor = MaterialTheme.colorScheme.primaryContainer,
+        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
     ) {
-        ElevatedButton(
-            onClick = {},
-            modifier = Modifier
-                .size(width = 150.dp, height = 50.dp),
-            colors = ButtonDefaults.elevatedButtonColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-            ),
-
-        ) {
-            Text(text = "Library")
-        }
-        ElevatedButton(
-            onClick = {},
-            modifier = Modifier
-                .size(width = 150.dp, height = 50.dp),
-            colors = ButtonDefaults.elevatedButtonColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-            ),
-
-        ) {
-            Text(text = "Recommend")
+        items.forEachIndexed { index, item ->
+            NavigationBarItem(
+                icon = {
+                    Icon(
+                        imageVector = if (index == 0) Icons.Filled.Home else Icons.Filled.Favorite,
+                        contentDescription = item
+                    )
+                },
+                label = { Text(text = item) },
+                selected = selectedIndex == index,
+                onClick = {
+                    selectedIndex = index
+                    when (index) {
+                        0 -> navController.navigate("library")
+                        1 -> navController.navigate("recommend")
+                    }
+                }
+            )
         }
     }
 }
