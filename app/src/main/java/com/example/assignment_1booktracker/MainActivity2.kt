@@ -87,6 +87,9 @@ fun BookDetails(modifier: Modifier = Modifier) {
         item{
             MarkedPoints()
         }
+        item {
+            Spacer(modifier = Modifier.height(35.dp))
+        }
     }
 }
 
