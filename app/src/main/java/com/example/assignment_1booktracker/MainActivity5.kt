@@ -70,6 +70,7 @@ fun AddBook(modifier: Modifier = Modifier) {
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Spacer(modifier = Modifier.height(50.dp))
         Card(
             modifier = Modifier
                 .fillMaxWidth()
