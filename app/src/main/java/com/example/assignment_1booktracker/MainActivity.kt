@@ -48,7 +48,7 @@ import androidx.compose.runtime.setValue
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.assignment_1booktracker.ui.theme.Assignment_1BookTrackerTheme
-
+import com.example.assignment_1booktracker.R
 
 
 class MainActivity : ComponentActivity() {

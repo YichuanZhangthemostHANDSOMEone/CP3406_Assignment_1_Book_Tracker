@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.demomovies"
+    namespace = "com.example.assignment_1booktracker"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.demomovies"
+        applicationId = "com.example.assignment_1booktracker"
         minSdk = 24
         targetSdk = 35
         versionCode = 1

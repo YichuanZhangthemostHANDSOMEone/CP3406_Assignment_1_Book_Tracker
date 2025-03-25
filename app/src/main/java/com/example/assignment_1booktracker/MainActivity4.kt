@@ -31,6 +31,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
+import com.example.assignment_1booktracker.R
 
 class MainActivity4 : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
