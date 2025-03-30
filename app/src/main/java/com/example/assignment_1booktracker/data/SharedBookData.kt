@@ -21,4 +21,7 @@ object SharedBookData {
         if (isDataLoaded) return
         _books.value = bookRepository.getBookDetails()
     }
+    fun updateBooks(newBooks: List<Book>) {
+        _books.value = newBooks
+    }
 }

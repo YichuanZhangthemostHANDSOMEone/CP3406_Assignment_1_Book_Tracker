@@ -40,20 +40,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.assignment_1booktracker.data.dbBook
+
 
 @Composable
 fun AddBookScreen(
     navController: NavController,
     viewModel: BookViewModel = viewModel(factory = BookViewModel.Factory)
 ) {
-    // 目前仅修改数据源，不改变 UI 布局，预留调用添加书籍接口
     val bookName = remember { mutableStateOf("") }
     val author = remember { mutableStateOf("") }
     val category = remember { mutableStateOf("") }
     val totalPages = remember { mutableStateOf("") }
-
-    val configuration = LocalConfiguration.current
-    val screenHeight = configuration.screenHeightDp.dp
+    // 默认封面图片的 URL（或资源路径），可根据实际情况修改
+    val defaultImage = "default_cover_image_url"
 
     Column(
         modifier = Modifier
@@ -83,7 +83,7 @@ fun AddBookScreen(
             onValueChange = { bookName.value = it },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(screenHeight * 0.1f)
+                .height(56.dp)
         )
         Spacer(modifier = Modifier.height(20.dp))
         InputField(
@@ -92,7 +92,7 @@ fun AddBookScreen(
             onValueChange = { author.value = it },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(screenHeight * 0.1f)
+                .height(56.dp)
         )
         Spacer(modifier = Modifier.height(20.dp))
         InputField(
@@ -101,7 +101,7 @@ fun AddBookScreen(
             onValueChange = { category.value = it },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(screenHeight * 0.1f)
+                .height(56.dp)
         )
         Spacer(modifier = Modifier.height(20.dp))
         InputField(
@@ -110,12 +110,23 @@ fun AddBookScreen(
             onValueChange = { totalPages.value = it },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(screenHeight * 0.1f)
+                .height(56.dp)
         )
         Spacer(modifier = Modifier.weight(1f))
         ElevatedButton(
             onClick = {
-                // 预留调用 viewModel.addBook() 等添加书籍逻辑接口，后续接入数据层即可
+                val total = totalPages.value.toIntOrNull() ?: 0
+                if (bookName.value.isNotBlank() && author.value.isNotBlank() && category.value.isNotBlank() && total > 0) {
+                    val newBook = dbBook(
+                        image = defaultImage,
+                        name = bookName.value,
+                        author = author.value,
+                        category = category.value,
+                        totalPages = total
+                    )
+                    viewModel.addBook(newBook)
+                    navController.popBackStack()
+                }
             },
             modifier = Modifier.padding(bottom = 16.dp)
         ) {
@@ -141,10 +152,9 @@ fun InputField(
             value = value,
             onValueChange = onValueChange,
             colors = TextFieldDefaults.textFieldColors(
-                containerColor = Color.Transparent,
-                focusedIndicatorColor = Color.Gray,
-                unfocusedIndicatorColor = Color.Gray,
-                disabledIndicatorColor = Color.Transparent
+                containerColor = MaterialTheme.colorScheme.surface,
+                focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
             ),
             modifier = Modifier.fillMaxWidth()
         )

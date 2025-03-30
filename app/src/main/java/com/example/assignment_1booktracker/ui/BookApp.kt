@@ -10,14 +10,12 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.assignment_1booktracker.routes.routes
 import com.example.assignment_1booktracker.ui.screens.AddBookScreen
+import com.example.assignment_1booktracker.ui.screens.AddPointScreen
 import com.example.assignment_1booktracker.ui.screens.BookDetailsScreen
 import com.example.assignment_1booktracker.ui.screens.LibraryScreen
 import com.example.assignment_1booktracker.ui.screens.RecDetailsScreen
 import com.example.assignment_1booktracker.ui.screens.RecommendationsScreen
 
-/**
- * 该文件只负责定义导航结构，不包含 UI 组件（如按钮、导航栏等）
- */
 @Composable
 fun BookAppNavigation(
     modifier: Modifier = Modifier,
@@ -28,17 +26,33 @@ fun BookAppNavigation(
         startDestination = routes.Library.name,
         modifier = modifier
     ) {
-        composable(routes.Library.name) { LibraryScreen(navController) }
-        composable(routes.Recommendations.name) { RecommendationsScreen(navController) }
-        composable(routes.AddBook.name) { AddBookScreen(navController) }
+        // 数据库相关页面
+        composable(routes.Library.name) {
+            LibraryScreen(navController)
+        }
+        composable(routes.AddBook.name) {
+            AddBookScreen(navController)
+        }
         composable(
             route = "${routes.BookDetails.name}/{bookId}",
             arguments = listOf(navArgument("bookId") { type = NavType.IntType })
         ) { backStackEntry ->
             BookDetailsScreen(
                 navController,
-                bookId = backStackEntry.arguments?.getInt("bookId")
+                bookId = backStackEntry.arguments?.getInt("bookId") ?: 0
+
             )
+        }
+        composable(
+            route = "${routes.AddPoint.name}/{bookId}",
+            arguments = listOf(navArgument("bookId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val bookId = backStackEntry.arguments?.getInt("bookId") ?: 0
+            AddPointScreen(navController, bookId)
+        }
+        // 网络相关页面
+        composable(routes.Recommendations.name) {
+            RecommendationsScreen(navController)
         }
         composable(
             route = "${routes.RecDetails.name}/{recId}",

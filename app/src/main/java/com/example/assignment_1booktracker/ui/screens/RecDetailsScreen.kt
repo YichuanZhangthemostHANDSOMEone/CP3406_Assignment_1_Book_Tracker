@@ -1,43 +1,20 @@
 package com.example.assignment_1booktracker.ui.screens
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.ui.Modifier
-import com.example.assignment_1booktracker.ui.theme.Assignment_1BookTrackerTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.unit.dp
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
-import coil3.util.Logger
-import com.example.assignment_1booktracker.R
 import com.example.assignment_1booktracker.ui.uiModels.getImagePainter
 
 @Composable
@@ -46,13 +23,31 @@ fun RecDetailsScreen(
     recId: Int?,
     viewModel: BookViewModel = viewModel(factory = BookViewModel.Factory)
 ) {
-    val book = recId?.let { viewModel.getBookById(it) }
-    if (book == null) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("Loading recommendation details...")
+    // 观察网络状态
+    val networkState by viewModel.networkUiState.collectAsState()
+    when (networkState) {
+        is NetworkBookUiState.Loading -> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
         }
-    } else {
-        RecDetailContent(book = book)
+        is NetworkBookUiState.Error -> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(text = (networkState as NetworkBookUiState.Error).message)
+            }
+        }
+        is NetworkBookUiState.Success -> {
+            val books = (networkState as NetworkBookUiState.Success).books
+            // 根据 recId 查找对应书籍
+            val book = recId?.let { id -> books.find { it.id == id } }
+            if (book == null) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("Recommendation not found")
+                }
+            } else {
+                RecDetailContent(book = book)
+            }
+        }
     }
 }
 
@@ -98,7 +93,7 @@ fun RecDetailCard(book: com.example.assignment_1booktracker.model.Book) {
                     model = book.image,
                     contentDescription = "Book Image",
                     modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop,
+                    contentScale = ContentScale.Crop
                 )
             }
             Row(
@@ -131,7 +126,11 @@ fun RecDetailInformation(book: com.example.assignment_1booktracker.model.Book) {
             horizontalArrangement = Arrangement.Start
         ) {
             Text("Author:", style = MaterialTheme.typography.displayMedium.copy(fontSize = 20.sp))
-            Text(book.author, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 5.dp))
+            Text(
+                book.author,
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(start = 5.dp)
+            )
         }
         Row(
             modifier = Modifier
@@ -141,7 +140,11 @@ fun RecDetailInformation(book: com.example.assignment_1booktracker.model.Book) {
             horizontalArrangement = Arrangement.Start
         ) {
             Text("Category:", style = MaterialTheme.typography.displayMedium.copy(fontSize = 20.sp))
-            Text(book.category, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 5.dp))
+            Text(
+                book.category,
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(start = 5.dp)
+            )
         }
         Row(
             modifier = Modifier
@@ -151,9 +154,13 @@ fun RecDetailInformation(book: com.example.assignment_1booktracker.model.Book) {
             horizontalArrangement = Arrangement.Start
         ) {
             Text("Recommend based on:", style = MaterialTheme.typography.displayMedium.copy(fontSize = 20.sp))
-            Text(book.baseon, style = MaterialTheme.typography.bodyLarge.copy(fontStyle = FontStyle.Italic), modifier = Modifier.padding(start = 5.dp))
+            Text(
+                book.baseon ?: "",
+                style = MaterialTheme.typography.bodyLarge.copy(fontStyle = FontStyle.Italic),
+                modifier = Modifier.padding(start = 5.dp)
+            )
         }
-        HorizontalDivider(thickness = 2.dp)
+        Divider(thickness = 2.dp)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -168,7 +175,7 @@ fun RecDetailInformation(book: com.example.assignment_1booktracker.model.Book) {
                 .padding(16.dp)
         ) {
             Text(
-                text = book.reason,
+                text = book.reason ?: "",
                 style = MaterialTheme.typography.bodyLarge.copy(fontStyle = FontStyle.Italic)
             )
         }

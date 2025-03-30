@@ -1,104 +1,75 @@
 package com.example.assignment_1booktracker.ui.screens
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.VerticalDivider
-import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.assignment_1booktracker.ui.theme.Assignment_1BookTrackerTheme
-
+import com.example.assignment_1booktracker.data.dbBook
+import com.example.assignment_1booktracker.ui.uiModels.MarkedPoints
 @Composable
 fun BookDetailsScreen(
     navController: NavController,
-    bookId: Int?,
+    bookId: Int,
     viewModel: BookViewModel = viewModel(factory = BookViewModel.Factory)
 ) {
-    // 通过 ViewModel 获取数据库中对应书籍的详情（预留接口）
-    val book = bookId?.let { viewModel.getBookById(it) }
+    // 这里直接通过 ViewModel 的 getDbBookById 获取数据库中的书籍数据
+    val book = viewModel.getDbBookById(bookId)
     if (book == null) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text("Loading book details...")
         }
     } else {
-        // 调用封装好的 BookDetailContent 保持原有布局（例如 PercentageCard、RatingView 等不变）
-        BookDetailContent(book = book)
+        BookDetailContent(book = book, navController = navController, viewModel = viewModel)
     }
 }
 
 @Composable
-fun BookDetailContent(book: com.example.assignment_1booktracker.model.Book) {
+fun BookDetailContent(book: dbBook, navController: NavController, viewModel: BookViewModel) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
         item { Spacer(modifier = Modifier.height(10.dp)) }
-        item { PercentageCard() }  // 若后续需要根据 book 数据修改，可在此处预留接口
+        item { PercentageCard(book = book, viewModel = viewModel) }
         item { Spacer(modifier = Modifier.height(16.dp)) }
-        item { RatingView() }
-//        item { MarkedPoints() }
+        item { RatingView(book = book, viewModel = viewModel) }
+        item { Spacer(modifier = Modifier.height(16.dp)) }
+        item {
+            MarkedPoints(
+                book = book,
+                onDelete = { viewModel.deleteBook(book.id) },
+                onAddPoint = { navController.navigate("AddPoint/${book.id}") }
+            )
+        }
         item { Spacer(modifier = Modifier.height(35.dp)) }
+        item { PersonalReview(book = book, viewModel = viewModel) }
     }
 }
 
 @Composable
-fun PercentageCard() {
+fun PercentageCard(book: dbBook, viewModel: BookViewModel) {
     val configuration = LocalConfiguration.current
     val cardHeight = (configuration.screenHeightDp * 0.2f).dp
 
-    var leftInput by remember { mutableStateOf("93") }
-    var rightInput by remember { mutableStateOf("168") }
-
-    val leftValue = leftInput.toFloatOrNull() ?: 0f
-    val rightValue = rightInput.toFloatOrNull() ?: 0f
-    val progress = if (rightValue != 0f) (leftValue / rightValue).coerceIn(0f, 1f) else 0f
+    var readPagesInput by remember { mutableStateOf(book.readPages.toString()) }
+    val totalPagesText = book.totalPages.toString()
 
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxWidth(),
         contentAlignment = Alignment.TopCenter
     ) {
         Card(
-            shape = RoundedCornerShape(8.dp),
+            shape = MaterialTheme.shapes.medium,
             elevation = CardDefaults.cardElevation(8.dp),
             modifier = Modifier
-                .fillMaxWidth(1f)
+                .fillMaxWidth()
                 .height(cardHeight)
         ) {
             Column(
@@ -113,179 +84,114 @@ fun PercentageCard() {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextField(
-                        value = leftInput,
-                        onValueChange = { leftInput = it },
+                        value = readPagesInput,
+                        onValueChange = { readPagesInput = it },
                         label = { Text("Read pages") },
                         modifier = Modifier.weight(1f)
                     )
-                    Spacer(modifier = Modifier.width(2.dp))
-                    VerticalDivider(color = MaterialTheme.colorScheme.secondary)
-                    Spacer(modifier = Modifier.width(2.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
                     TextField(
-                        value = rightInput,
-                        onValueChange = { rightInput = it },
+                        value = totalPagesText,
+                        onValueChange = {},
                         label = { Text("Total pages") },
+                        enabled = false,
                         modifier = Modifier.weight(1f)
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = {
+                        val readPages = readPagesInput.toIntOrNull() ?: 0
+                        viewModel.updateReadPages(book.id, readPages)
+                    },
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Text("Update Progress")
+                }
                 LinearProgressIndicator(
-                    progress = progress,
+                    progress = (book.progress / 100f),
                     modifier = Modifier
-                        .weight(0.45f)
                         .fillMaxWidth()
+                        .padding(top = 8.dp)
                 )
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RatingView() {
-    val configuration = LocalConfiguration.current
-    val containerHeight = (configuration.screenHeightDp * 0.05f).dp
-    var rating by remember { mutableStateOf("") }
-
-    Box(
+fun RatingView(book: dbBook, viewModel: BookViewModel) {
+    var ratingInput by remember { mutableStateOf(book.rating.toString()) }
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(containerHeight)
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Absolute.Right
-        ) {
-            Text(
-                text = "Rating:",
-                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            TextField(
-                value = rating,
-                onValueChange = { rating = it },
-                modifier = Modifier.width(60.dp).height(15.dp),
-                singleLine = true,
-                colors = TextFieldDefaults.textFieldColors(
-                    containerColor = Color.Transparent,
-                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                    unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                )
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(text = "/10")
+        Text(
+            text = "Rating:",
+            style = MaterialTheme.typography.titleLarge
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        TextField(
+            value = ratingInput,
+            onValueChange = { ratingInput = it },
+            modifier = Modifier.width(60.dp),
+            singleLine = true
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(text = "/10")
+        Spacer(modifier = Modifier.width(8.dp))
+        Button(onClick = {
+            val rating = ratingInput.toIntOrNull() ?: 0
+            viewModel.updateRating(book.id, rating)
+        }) {
+            Text("Update Rating")
         }
     }
 }
 
-
-//@Composable
-//fun MarkedPoints(){
-//    Box(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .height(60.dp),
-//        contentAlignment = Alignment.BottomStart
-//    ){
-//        Text(
-//            text = "Critical points",
-//            style = MaterialTheme.typography.titleLarge.copy(
-//                fontSize = 40.sp,
-//                fontWeight = FontWeight.SemiBold
-//            )
-//        )
-//    }
-//
-//
-//    Column(
-//        modifier = Modifier
-//            .fillMaxSize()
-//            .padding(16.dp)
-//    ) {
-//        cardContents.forEach { item ->
-//            Card(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(vertical = 8.dp),
-//                elevation = CardDefaults.cardElevation(4.dp)
-//            ) {
-//                Row(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(vertical = 16.dp),
-//                    verticalAlignment = Alignment.CenterVertically
-//                ) {
-//                    Spacer(modifier = Modifier.weight(0.1f))
-//
-//                    Box(
-//                        modifier = Modifier.weight(0.35f),
-//                        contentAlignment = Alignment.CenterStart
-//                    ) {
-//                        Text(
-//                            text = item.story,
-//                            style = MaterialTheme.typography.displaySmall.copy(fontSize = 20.sp)
-//                        )
-//                    }
-//
-//                    Spacer(modifier = Modifier.weight(0.1f))
-//
-//                    Box(
-//                        modifier = Modifier.weight(0.35f),
-//                        contentAlignment = Alignment.CenterEnd
-//                    ) {
-//                        Text(
-//                            text = item.page,
-//                            style = MaterialTheme.typography.displaySmall.copy(fontSize = 20.sp)
-//                        )
-//                    }
-//                    Spacer(modifier = Modifier.weight(0.1f))
-//                }
-//            }
-//        }
-//    }
-//}
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PersonalReview() {
-    var showBottomSheet by remember { mutableStateOf(false) }
-    val sheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = false
-    )
+fun PersonalReview(book: dbBook, viewModel: BookViewModel) {
+    var reviewInput by remember { mutableStateOf(book.review ?: "") }
+    var showSheet by remember { mutableStateOf(false) }
 
-    BottomAppBar(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(LocalConfiguration.current.screenHeightDp.dp * 0.1f),
-        containerColor = MaterialTheme.colorScheme.primary
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Button(
-                onClick = { showBottomSheet = true },
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onPrimary,
-                    contentColor = MaterialTheme.colorScheme.primary)
-            ) {
-                Text("Personal Review")
-            }
+    Column {
+        if (reviewInput.isNotBlank()) {
+            Text("Review: $reviewInput", style = MaterialTheme.typography.bodyLarge)
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+        Button(onClick = { showSheet = true }) {
+            Text("Add/Edit Review")
         }
     }
-    if (showBottomSheet) {
+    if (showSheet) {
         ModalBottomSheet(
-            modifier = Modifier.fillMaxHeight(),
-            sheetState = sheetState,
-            onDismissRequest = { showBottomSheet = false }
+            onDismissRequest = { showSheet = false }
         ) {
-            Text(
-                "Write your personal review here.",
-                modifier = Modifier.padding(16.dp)
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                TextField(
+                    value = reviewInput,
+                    onValueChange = { reviewInput = it },
+                    label = { Text("Your Review") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = {
+                        viewModel.updateReview(book.id, reviewInput)
+                        showSheet = false
+                    },
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Text("Submit")
+                }
+            }
         }
     }
 }
