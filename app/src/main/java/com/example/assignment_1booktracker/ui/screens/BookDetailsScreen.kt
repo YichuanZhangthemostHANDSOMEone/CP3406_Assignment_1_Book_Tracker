@@ -18,14 +18,30 @@ fun BookDetailsScreen(
     bookId: Int,
     viewModel: BookViewModel = viewModel(factory = BookViewModel.Factory)
 ) {
-    // 这里直接通过 ViewModel 的 getDbBookById 获取数据库中的书籍数据
-    val book = viewModel.getDbBookById(bookId)
-    if (book == null) {
+    // 监听数据库状态变化
+    val dbState by viewModel.dbUiState.collectAsState()
+    var currentBook by remember { mutableStateOf<dbBook?>(null) }
+
+    LaunchedEffect(bookId, dbState) {
+        // 当bookId或数据库状态变化时刷新数据
+        currentBook = when (dbState) {
+            is DbBookUiState.Success -> {
+                (dbState as DbBookUiState.Success).books.find { it.id == bookId }
+            }
+            else -> null
+        }
+    }
+
+    if (currentBook == null) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("Loading book details...")
+            CircularProgressIndicator()
         }
     } else {
-        BookDetailContent(book = book, navController = navController, viewModel = viewModel)
+        BookDetailContent(
+            book = currentBook!!,
+            navController = navController,
+            viewModel = viewModel
+        )
     }
 }
 
@@ -36,11 +52,24 @@ fun BookDetailContent(book: dbBook, navController: NavController, viewModel: Boo
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        item { Spacer(modifier = Modifier.height(10.dp)) }
-        item { PercentageCard(book = book, viewModel = viewModel) }
-        item { Spacer(modifier = Modifier.height(16.dp)) }
-        item { RatingView(book = book, viewModel = viewModel) }
-        item { Spacer(modifier = Modifier.height(16.dp)) }
+        item {
+            PercentageCard(
+                book = book,
+                onUpdate = { pages ->
+                    viewModel.updateReadPages(book.id, pages)
+                }
+            )
+        }
+        item { Spacer(Modifier.height(16.dp)) }
+        item {
+            RatingView(
+                book = book,
+                onUpdate = { rating ->
+                    viewModel.updateRating(book.id, rating)
+                }
+            )
+        }
+        item { Spacer(Modifier.height(16.dp)) }
         item {
             MarkedPoints(
                 book = book,
@@ -48,152 +77,156 @@ fun BookDetailContent(book: dbBook, navController: NavController, viewModel: Boo
                 onAddPoint = { navController.navigate("AddPoint/${book.id}") }
             )
         }
-        item { Spacer(modifier = Modifier.height(35.dp)) }
-        item { PersonalReview(book = book, viewModel = viewModel) }
-    }
-}
-
-@Composable
-fun PercentageCard(book: dbBook, viewModel: BookViewModel) {
-    val configuration = LocalConfiguration.current
-    val cardHeight = (configuration.screenHeightDp * 0.2f).dp
-
-    var readPagesInput by remember { mutableStateOf(book.readPages.toString()) }
-    val totalPagesText = book.totalPages.toString()
-
-    Box(
-        modifier = Modifier.fillMaxWidth(),
-        contentAlignment = Alignment.TopCenter
-    ) {
-        Card(
-            shape = MaterialTheme.shapes.medium,
-            elevation = CardDefaults.cardElevation(8.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(cardHeight)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    TextField(
-                        value = readPagesInput,
-                        onValueChange = { readPagesInput = it },
-                        label = { Text("Read pages") },
-                        modifier = Modifier.weight(1f)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    TextField(
-                        value = totalPagesText,
-                        onValueChange = {},
-                        label = { Text("Total pages") },
-                        enabled = false,
-                        modifier = Modifier.weight(1f)
-                    )
+        item { Spacer(Modifier.height(35.dp)) }
+        item {
+            PersonalReview(
+                book = book,
+                onUpdate = { review ->
+                    viewModel.updateReview(book.id, review)
                 }
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(
-                    onClick = {
-                        val readPages = readPagesInput.toIntOrNull() ?: 0
-                        viewModel.updateReadPages(book.id, readPages)
-                    },
-                    modifier = Modifier.align(Alignment.End)
-                ) {
-                    Text("Update Progress")
-                }
-                LinearProgressIndicator(
-                    progress = (book.progress / 100f),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp)
-                )
-            }
+            )
         }
     }
 }
 
 @Composable
-fun RatingView(book: dbBook, viewModel: BookViewModel) {
-    var ratingInput by remember { mutableStateOf(book.rating.toString()) }
-    Row(
+fun PercentageCard(book: dbBook, onUpdate: (Int) -> Unit) {
+    var readPages by remember { mutableStateOf(book.readPages?: 0) }
+    val totalPages = if (book.totalPages <= 0) 1 else book.totalPages // 防止除零
+
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .height(200.dp),
+        elevation = CardDefaults.cardElevation(8.dp)
     ) {
-        Text(
-            text = "Rating:",
-            style = MaterialTheme.typography.titleLarge
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        TextField(
-            value = ratingInput,
-            onValueChange = { ratingInput = it },
-            modifier = Modifier.width(60.dp),
-            singleLine = true
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(text = "/10")
-        Spacer(modifier = Modifier.width(8.dp))
-        Button(onClick = {
-            val rating = ratingInput.toIntOrNull() ?: 0
-            viewModel.updateRating(book.id, rating)
-        }) {
-            Text("Update Rating")
+        Column(Modifier.padding(16.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                TextField(
+                    value = readPages.toString(),
+                    onValueChange = {
+                        readPages = it.toIntOrNull() ?: 0
+                    },
+                    label = { Text("已读页数") },
+                    modifier = Modifier.weight(1f)
+                )
+                Spacer(Modifier.width(16.dp))
+                Text(
+                    text = "总页数: $totalPages",
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+            Spacer(Modifier.height(16.dp))
+            Button(
+                onClick = {
+                    val validPages = readPages.coerceIn(0, totalPages)
+                    onUpdate(validPages)
+                },
+                modifier = Modifier.align(Alignment.End)
+            ) {
+                Text("更新进度")
+            }
+            LinearProgressIndicator(
+                progress = (readPages.toFloat() / totalPages),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun RatingView(book: dbBook, onUpdate: (Int) -> Unit) {
+    var rating by remember { mutableStateOf((book.rating ?: 0).coerceIn(0, 10)) }
+
+    Card(
+        elevation = CardDefaults.cardElevation(4.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text("评分：", style = MaterialTheme.typography.titleLarge)
+            Spacer(Modifier.width(8.dp))
+            Slider(
+                value = rating.toFloat(),
+                onValueChange = { rating = it.toInt() },
+                valueRange = 0f..10f,
+                steps = 9,
+                modifier = Modifier.weight(1f)
+            )
+            Spacer(Modifier.width(8.dp))
+            Text(
+                text = "$rating/10",
+                style = MaterialTheme.typography.titleMedium
+            )
+            Spacer(Modifier.width(8.dp))
+            Button(onClick = { onUpdate(rating) }) {
+                Text("保存评分")
+            }
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PersonalReview(book: dbBook, viewModel: BookViewModel) {
-    var reviewInput by remember { mutableStateOf(book.review ?: "") }
-    var showSheet by remember { mutableStateOf(false) }
+fun PersonalReview(book: dbBook, onUpdate: (String) -> Unit) {
+    var showEditor by remember { mutableStateOf(false) }
+    var reviewText by remember { mutableStateOf(book.review ?: "") }
 
-    Column {
-        if (reviewInput.isNotBlank()) {
-            Text("Review: $reviewInput", style = MaterialTheme.typography.bodyLarge)
-            Spacer(modifier = Modifier.height(8.dp))
-        }
-        Button(onClick = { showSheet = true }) {
-            Text("Add/Edit Review")
+    Card(
+        elevation = CardDefaults.cardElevation(4.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(Modifier.padding(16.dp)) {
+            if (reviewText.isNotEmpty()) {
+                Text(
+                    text = reviewText,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
+            Button(
+                onClick = { showEditor = true },
+                modifier = Modifier.align(Alignment.End)
+            ) {
+                Text(if (reviewText.isEmpty()) "添加书评" else "编辑书评")
+            }
         }
     }
-    if (showSheet) {
-        ModalBottomSheet(
-            onDismissRequest = { showSheet = false }
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
+
+    if (showEditor) {
+        ModalBottomSheet(onDismissRequest = { showEditor = false }) {
+            Column(Modifier.padding(16.dp)) {
                 TextField(
-                    value = reviewInput,
-                    onValueChange = { reviewInput = it },
-                    label = { Text("Your Review") },
-                    modifier = Modifier.fillMaxWidth()
+                    value = reviewText,
+                    onValueChange = { reviewText = it },
+                    label = { Text("输入书评") },
+                    modifier = Modifier.fillMaxWidth(),
+                    maxLines = 5
                 )
-                Spacer(modifier = Modifier.height(16.dp))
-                Button(
-                    onClick = {
-                        viewModel.updateReview(book.id, reviewInput)
-                        showSheet = false
-                    },
-                    modifier = Modifier.align(Alignment.End)
-                ) {
-                    Text("Submit")
+                Spacer(Modifier.height(16.dp))
+                Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+                    TextButton(onClick = { showEditor = false }) {
+                        Text("取消")
+                    }
+                    Spacer(Modifier.width(16.dp))
+                    Button(onClick = {
+                        onUpdate(reviewText)
+                        showEditor = false
+                    }) {
+                        Text("保存")
+                    }
                 }
             }
         }
     }
 }
-
-

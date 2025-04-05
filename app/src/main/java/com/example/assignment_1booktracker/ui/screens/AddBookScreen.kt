@@ -17,8 +17,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -40,6 +44,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import android.net.Uri
+import coil3.compose.rememberAsyncImagePainter
 import com.example.assignment_1booktracker.data.dbBook
 
 
@@ -55,6 +61,13 @@ fun AddBookScreen(
     // 默认封面图片的 URL（或资源路径），可根据实际情况修改
     val defaultImage = "default_cover_image_url"
 
+    // 存储用户选择的图片 URI
+    val imageUri = remember { mutableStateOf<String?>(null) }
+    // 使用 ActivityResult API 选择图片（过滤类型为 image/*）
+    val launcher = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
+        uri?.let { imageUri.value = it.toString() }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -62,18 +75,30 @@ fun AddBookScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.height(50.dp))
+        // 修改 Card 为可点击，点击后启动图片选择器
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(150.dp),
+                .height(150.dp)
+                .clickable { launcher.launch("image/*") },
             elevation = CardDefaults.cardElevation(4.dp)
         ) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = "Add Image",
-                    modifier = Modifier.size(48.dp)
-                )
+                if (imageUri.value != null) {
+                    // 显示用户选择的图片
+                    Image(
+                        painter = rememberAsyncImagePainter(model = imageUri.value),
+                        contentDescription = "Selected Image",
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    // 未选择图片时显示添加图标
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = "Add Image",
+                        modifier = Modifier.size(48.dp)
+                    )
+                }
             }
         }
         Spacer(modifier = Modifier.height(50.dp))
@@ -83,7 +108,6 @@ fun AddBookScreen(
             onValueChange = { bookName.value = it },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp)
         )
         Spacer(modifier = Modifier.height(20.dp))
         InputField(
@@ -92,7 +116,6 @@ fun AddBookScreen(
             onValueChange = { author.value = it },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp)
         )
         Spacer(modifier = Modifier.height(20.dp))
         InputField(
@@ -101,7 +124,6 @@ fun AddBookScreen(
             onValueChange = { category.value = it },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp)
         )
         Spacer(modifier = Modifier.height(20.dp))
         InputField(
@@ -110,7 +132,6 @@ fun AddBookScreen(
             onValueChange = { totalPages.value = it },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp)
         )
         Spacer(modifier = Modifier.weight(1f))
         ElevatedButton(
@@ -156,7 +177,9 @@ fun InputField(
                 focusedIndicatorColor = MaterialTheme.colorScheme.primary,
                 unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
             ),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
         )
     }
 }
