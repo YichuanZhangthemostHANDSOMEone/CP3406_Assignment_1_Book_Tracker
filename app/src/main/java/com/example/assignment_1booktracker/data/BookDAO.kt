@@ -5,10 +5,10 @@ import androidx.room.*
 @Dao
 interface BookDao {
 
-    @Query("SELECT * FROM books")
+    @Query("SELECT * FROM dbBook")
     suspend fun getdbBooks(): List<dbBook>
 
-    @Query("SELECT * FROM books WHERE id = :bookId")
+    @Query("SELECT * FROM dbBook WHERE id = :bookId")
     suspend fun getdbBookById(bookId: Int): dbBook?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
