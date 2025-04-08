@@ -83,6 +83,7 @@ fun RecommendationsScreen(
                         Row(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                             rowBooks.forEach { book ->
                                 val uiBook = UIBook(
+                                    id = book.id,
                                     imageUrl = book.image,
                                     leftText = book.name,
                                     rightText = "Rate: ${book.rate}"

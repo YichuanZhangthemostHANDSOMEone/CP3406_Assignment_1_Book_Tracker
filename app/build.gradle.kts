@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("kotlinx-serialization")
-    id("com.google.devtools.ksp") version "1.9.22-1.0.17"
+    id("com.google.devtools.ksp") version "2.1.10-1.0.31"
 }
 
 configurations.all {
@@ -52,6 +52,10 @@ dependencies {
     implementation("androidx.room:room-runtime:$room_version")
     ksp("androidx.room:room-compiler:$room_version") // 关键注解处理器
     implementation("androidx.room:room-ktx:$room_version")
+    implementation ("com.github.bumptech.glide:glide:4.15.1")
+    ksp("com.github.bumptech.glide:compiler:4.15.1")
+    implementation ("com.github.bumptech.glide:compose:1.0.0-beta01")
+    implementation ("com.google.code.gson:gson:2.8.9")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

@@ -16,7 +16,9 @@ import androidx.navigation.compose.rememberNavController
 import com.example.assignment_1booktracker.data.SharedBookData
 import com.example.assignment_1booktracker.ui.BookAppNavigation
 import com.example.assignment_1booktracker.ui.theme.Assignment_1BookTrackerTheme
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,21 +27,19 @@ class MainActivity : ComponentActivity() {
         setContent {
             Assignment_1BookTrackerTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    // 控制数据是否加载完成
-                    val isInitialized = remember { mutableStateOf(false) }
-                    val coroutineScope = rememberCoroutineScope()
+                    // 使用 remember 来存储初始化状态
+                    var isInitialized by remember { mutableStateOf(false) }
 
-                    // 异步初始化 SharedBookData（加载书籍数据）
+                    // 使用 LaunchedEffect 并切换到 IO 调度器执行耗时操作
                     LaunchedEffect(Unit) {
-                        coroutineScope.launch {
+                        withContext(Dispatchers.IO) {
                             SharedBookData.initialize(application)
-                            isInitialized.value = true
                         }
+                        isInitialized = true
                     }
 
                     // 数据加载完成后显示主界面，否则显示 LoadingScreen
-                    if (isInitialized.value) {
-                        // 使用导航组件组织各个 Screen
+                    if (isInitialized) {
                         BookAppNavigation(navController = rememberNavController())
                     } else {
                         LoadingScreen()

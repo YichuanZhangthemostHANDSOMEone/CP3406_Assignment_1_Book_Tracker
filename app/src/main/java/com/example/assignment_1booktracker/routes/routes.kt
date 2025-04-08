@@ -6,5 +6,6 @@ enum class routes(val title: String) {
     BookDetails(title = "Book Details"),
     Recommendations(title = "Recommendations"),
     RecDetails(title = "Recommendation Details"),
-    AddPoint(title = "AddPoint")
+    AddPoint(title = "AddPoint"),
+    EditPoint(title = "EditPoint")
 }

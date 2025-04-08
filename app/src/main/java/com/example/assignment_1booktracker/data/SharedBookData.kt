@@ -13,14 +13,16 @@ object SharedBookData {
     private var isDataLoaded = false
 
     suspend fun initialize(application: Application) {
-        val bookRepository = (application as BookApplication).container.bookRepository
-        fetchBooks(bookRepository)
+        val networkRepo = (application as BookApplication).container.networkRepository
+        fetchBooks(networkRepo)
     }
 
-    private suspend fun fetchBooks(bookRepository: BookRepository) {
+    private suspend fun fetchBooks(networkRepo: NetworkBookRepository) {
         if (isDataLoaded) return
-        _books.value = bookRepository.getBookDetails()
+        _books.value = networkRepo.getBookDetails()
+        isDataLoaded = true
     }
+
     fun updateBooks(newBooks: List<Book>) {
         _books.value = newBooks
     }
