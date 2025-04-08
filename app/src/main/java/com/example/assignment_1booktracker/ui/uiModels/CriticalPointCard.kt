@@ -4,7 +4,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -43,26 +48,34 @@ fun CriticalPointCard(
                 .fillMaxSize()
                 .padding(8.dp)
         ) {
-            // 左侧图标区域：删除和编辑 icon
+            // 左侧：显示文本（关键点内容及页码）
             Column(
-                verticalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.width(48.dp)
-            ) {
-                IconButton(onClick = onDelete) {
-                    Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete Critical Point")
-                }
-                IconButton(onClick = onEdit) {
-                    Icon(imageVector = Icons.Filled.Edit, contentDescription = "Edit Critical Point")
-                }
-            }
-            Spacer(modifier = Modifier.width(8.dp))
-            // 右侧文本区域：关键点内容和页码，上下排列
-            Column(
-                verticalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight(),
+                verticalArrangement = Arrangement.Center
             ) {
                 Text(text = criticalPoint.text, style = MaterialTheme.typography.bodyLarge)
                 Text(text = "Page: ${criticalPoint.page}", style = MaterialTheme.typography.bodyMedium)
+            }
+            // 右侧：显示删除和编辑按钮
+            Column(
+                verticalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxHeight()
+            ) {
+                IconButton(onClick = onDelete) {
+                    Icon(
+                        imageVector = Icons.Filled.Delete,
+                        contentDescription = "Delete Critical Point",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
+                IconButton(onClick = onEdit) {
+                    Icon(
+                        imageVector = Icons.Filled.Edit,
+                        contentDescription = "Edit Critical Point"
+                    )
+                }
             }
         }
     }

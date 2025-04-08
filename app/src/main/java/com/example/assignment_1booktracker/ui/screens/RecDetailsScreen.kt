@@ -122,42 +122,57 @@ fun RecDetailInformation(book: com.example.assignment_1booktracker.model.Book) {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(infoContainerHeight),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Start
+            horizontalArrangement = Arrangement.Start,
         ) {
-            Text("Author:", style = MaterialTheme.typography.displayMedium.copy(fontSize = 20.sp))
+            Text(
+                "Author:",
+                style = MaterialTheme.typography.displayMedium.copy(fontSize = 20.sp),
+                modifier = Modifier.alignByBaseline()
+            )
             Text(
                 book.author,
                 style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(start = 5.dp)
+                modifier = Modifier
+                    .padding(start = 5.dp)
+                    .alignByBaseline()
             )
         }
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(infoContainerHeight),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Start
+            horizontalArrangement = Arrangement.Start,
         ) {
-            Text("Category:", style = MaterialTheme.typography.displayMedium.copy(fontSize = 20.sp))
+            Text(
+                "Category:",
+                style = MaterialTheme.typography.displayMedium.copy(fontSize = 20.sp),
+                modifier = Modifier.alignByBaseline()
+            )
             Text(
                 book.category,
                 style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(start = 5.dp)
+                modifier = Modifier
+                    .padding(start = 5.dp)
+                    .alignByBaseline()
             )
         }
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(infoContainerHeight),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Start
+            horizontalArrangement = Arrangement.Start,
         ) {
-            Text("Recommend based on:", style = MaterialTheme.typography.displayMedium.copy(fontSize = 20.sp))
+            Text(
+                "Recommend based on:",
+                style = MaterialTheme.typography.displayMedium.copy(fontSize = 20.sp),
+                modifier = Modifier.alignByBaseline()
+            )
             Text(
                 book.baseon ?: "",
                 style = MaterialTheme.typography.bodyLarge.copy(fontStyle = FontStyle.Italic),
-                modifier = Modifier.padding(start = 5.dp)
+                modifier = Modifier
+                    .padding(start = 5.dp)
+                    .alignByBaseline()
             )
         }
         Divider(thickness = 2.dp)
