@@ -5,11 +5,13 @@ import android.util.Log
 import com.example.assignment_1booktracker.model.Book
 import com.example.assignment_1booktracker.network.BookApiService
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
 import retrofit2.Response
 
 // Database相关操作接口
 interface DatabaseBookRepository {
     suspend fun getDbBooks(): List<dbBook>
+    fun getDbBooksFlow(): Flow<List<dbBook>>
     suspend fun getDbBookById(bookId: Int): dbBook?
     suspend fun addDbBook(book: dbBook)
     suspend fun updateDbBook(book: dbBook)
@@ -25,6 +27,9 @@ interface NetworkBookRepository {
 class DatabaseBookRepositoryImpl(
     private val bookDao: BookDao
 ) : DatabaseBookRepository {
+
+    override fun getDbBooksFlow(): Flow<List<dbBook>> = bookDao.getdbBooksFlow()
+
     override suspend fun getDbBooks(): List<dbBook> {
         return try {
             bookDao.getdbBooks()

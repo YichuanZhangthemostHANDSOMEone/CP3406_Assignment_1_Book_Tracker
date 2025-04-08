@@ -1,9 +1,13 @@
 package com.example.assignment_1booktracker.data
 
 import androidx.room.*
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface BookDao {
+
+    @Query("SELECT * FROM dbBook")
+    fun getdbBooksFlow(): Flow<List<dbBook>>
 
     @Query("SELECT * FROM dbBook")
     suspend fun getdbBooks(): List<dbBook>
