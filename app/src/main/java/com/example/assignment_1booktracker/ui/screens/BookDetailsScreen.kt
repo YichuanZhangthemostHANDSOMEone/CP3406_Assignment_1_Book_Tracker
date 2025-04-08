@@ -1,17 +1,21 @@
 package com.example.assignment_1booktracker.ui.screens
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.assignment_1booktracker.data.dbBook
-import com.example.assignment_1booktracker.ui.uiModels.MarkedPoints
+import com.example.assignment_1booktracker.ui.uiModels.CriticalPointCard
+import com.example.assignment_1booktracker.ui.uiModels.toUiModel
+
+
 @Composable
 fun BookDetailsScreen(
     navController: NavController,
@@ -23,7 +27,6 @@ fun BookDetailsScreen(
     var currentBook by remember { mutableStateOf<dbBook?>(null) }
 
     LaunchedEffect(bookId, dbState) {
-        // 当bookId或数据库状态变化时刷新数据
         currentBook = when (dbState) {
             is DbBookUiState.Success -> {
                 (dbState as DbBookUiState.Success).books.find { it.id == bookId }
@@ -52,37 +55,53 @@ fun BookDetailContent(book: dbBook, navController: NavController, viewModel: Boo
             .fillMaxSize()
             .padding(16.dp)
     ) {
+        // 第一部分：删除书籍按钮移至顶部，并留有顶部间距
+        item {
+            Button(
+                onClick = {
+                    viewModel.deleteBook(book.id!!)
+                    // 删除成功后返回上一界面
+                    navController.popBackStack()
+                },
+                modifier = Modifier
+                    .padding(top = 8.dp)
+                    .fillMaxWidth()
+            ) {
+                Text("Delete Book")
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+        // 第二部分：进度卡
         item {
             PercentageCard(
                 book = book,
                 onUpdate = { pages ->
-                    viewModel.updateReadPages(book.id, pages)
+                    viewModel.updateReadPages(book.id!!, pages)
                 }
             )
         }
         item { Spacer(Modifier.height(16.dp)) }
+        // 第三部分：评分卡
         item {
             RatingView(
                 book = book,
                 onUpdate = { rating ->
-                    viewModel.updateRating(book.id, rating)
+                    viewModel.updateRating(book.id!!, rating)
                 }
             )
         }
         item { Spacer(Modifier.height(16.dp)) }
+        // 第四部分：关键点区域（包括Critical Points标题、Add Point按钮和关键点列表）
         item {
-            MarkedPoints(
-                book = book,
-                onDelete = { viewModel.deleteBook(book.id) },
-                onAddPoint = { navController.navigate("AddPoint/${book.id}") }
-            )
+            CriticalPointsSection(book = book, navController = navController, viewModel = viewModel)
         }
-        item { Spacer(Modifier.height(35.dp)) }
+        item { Spacer(modifier = Modifier.height(35.dp)) }
+        // 第五部分：个人书评
         item {
             PersonalReview(
                 book = book,
                 onUpdate = { review ->
-                    viewModel.updateReview(book.id, review)
+                    viewModel.updateReview(book.id!!, review)
                 }
             )
         }
@@ -91,8 +110,11 @@ fun BookDetailContent(book: dbBook, navController: NavController, viewModel: Boo
 
 @Composable
 fun PercentageCard(book: dbBook, onUpdate: (Int) -> Unit) {
-    var readPages by remember { mutableStateOf(book.readPages?: 0) }
-    val totalPages = if (book.totalPages <= 0) 1 else book.totalPages // 防止除零
+    var readPages by remember { mutableStateOf(book.readPages ?: 0) }
+    val totalPages = if (book.totalPages <= 0) 1 else book.totalPages // 防止除0
+
+    // 动画进度值
+    val animatedProgress by animateFloatAsState(targetValue = (readPages.toFloat() / totalPages))
 
     Card(
         modifier = Modifier
@@ -128,10 +150,10 @@ fun PercentageCard(book: dbBook, onUpdate: (Int) -> Unit) {
                 },
                 modifier = Modifier.align(Alignment.End)
             ) {
-                Text("更新进度")
+                Text("Update Progress")
             }
             LinearProgressIndicator(
-                progress = (readPages.toFloat() / totalPages),
+                progress = animatedProgress,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 8.dp)
@@ -227,6 +249,38 @@ fun PersonalReview(book: dbBook, onUpdate: (String) -> Unit) {
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun CriticalPointsSection(book: dbBook, navController: NavController, viewModel: BookViewModel) {
+    val criticalPoints = book.criticalPoints ?: emptyList()
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                "Critical Points",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+            // 将 Add Point 按钮移动到右侧，点击后跳转至 AddPointScreen（带动画）
+            Button(onClick = { navController.navigate("AddPoint/${book.id}") }) {
+                Text("Add Point")
+            }
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        // 遍历显示每个关键点的 Card，并转换为 UI 模型
+        criticalPoints.forEach { cp ->
+            CriticalPointCard(
+                criticalPoint = cp.toUiModel(),
+                onDelete = { viewModel.deleteCriticalPoint(book.id!!, cp.id) },
+                onEdit = { navController.navigate("EditPoint/${book.id}/${cp.id}") }
+            )
+            Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }
