@@ -59,7 +59,7 @@ fun BookDetailContent(book: dbBook, navController: NavController, viewModel: Boo
             .statusBarsPadding() // 顶部预留安全区域
             .padding(16.dp)
     ) {
-        // 顶部区域：居中显示书名，右上角显示删除按钮
+        // 顶部区域：显示书名，右上角删除按钮
         item {
             Box(modifier = Modifier.fillMaxWidth()) {
                 Text(
@@ -79,13 +79,13 @@ fun BookDetailContent(book: dbBook, navController: NavController, viewModel: Boo
                     Icon(
                         imageVector = Icons.Filled.Delete,
                         contentDescription = "Delete Book",
-                        tint = MaterialTheme.colorScheme.error // 红色
+                        tint = MaterialTheme.colorScheme.error
                     )
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
         }
-        // PercentageCard：显示书的进度和已读页数
+        // 显示进度卡片
         item {
             PercentageCard(
                 book = book,
@@ -95,7 +95,7 @@ fun BookDetailContent(book: dbBook, navController: NavController, viewModel: Boo
             )
         }
         item { Spacer(modifier = Modifier.height(16.dp)) }
-        // Rating区域
+        // 评分区域
         item {
             RatingView(
                 book = book,
@@ -105,19 +105,15 @@ fun BookDetailContent(book: dbBook, navController: NavController, viewModel: Boo
             )
         }
         item { Spacer(modifier = Modifier.height(16.dp)) }
-        // 分隔线：Rating和Critical Points之间
-        item {
-            Divider(thickness = 1.dp)
-        }
-        // Critical Points部分
+        // 分隔线：Rating与Critical Points之间
+        item { Divider(thickness = 1.dp) }
+        // 关键点区域
         item {
             CriticalPointsSection(book = book, navController = navController, viewModel = viewModel)
         }
-        // 分隔线：Critical Points和Review之间
-        item {
-            Divider(thickness = 1.dp)
-        }
-        // 重新设计的书评区域
+        // 分隔线：Critical Points与Review之间
+        item { Divider(thickness = 1.dp) }
+        // 书评区域
         item {
             PersonalReviewNew(book = book, onUpdate = { review ->
                 viewModel.updateReview(book.id!!, review)
@@ -128,11 +124,10 @@ fun BookDetailContent(book: dbBook, navController: NavController, viewModel: Boo
 
 @Composable
 fun PercentageCard(book: dbBook, onUpdate: (Int) -> Unit) {
+    // totalPages 为书的总页数，若 <= 0 则取 1 避免除 0
     val totalPages = if (book.totalPages <= 0) 1 else book.totalPages
-    // 使用字符串状态，方便直接在 TextField 中编辑
     var readPagesInput by remember { mutableStateOf(book.readPages?.toString() ?: "") }
-    var inputError by remember { mutableStateOf(false) }
-    // 将输入的数字转换为进度值
+    var errorMessage by remember { mutableStateOf("") }
     val currentPages = readPagesInput.toIntOrNull() ?: 0
     val animatedProgress by animateFloatAsState(targetValue = currentPages.toFloat() / totalPages)
 
@@ -153,16 +148,15 @@ fun PercentageCard(book: dbBook, onUpdate: (Int) -> Unit) {
                         value = readPagesInput,
                         onValueChange = {
                             readPagesInput = it
-                            val parsed = it.toIntOrNull() ?: 0
-                            inputError = parsed <= 0
+                            errorMessage = ""
                         },
                         label = { Text("Read Pages") },
-                        isError = inputError,
+                        isError = errorMessage.isNotEmpty(),
                         modifier = Modifier.fillMaxWidth()
                     )
-                    if (inputError) {
+                    if (errorMessage.isNotEmpty()) {
                         Text(
-                            "Please input integer greater than 0",
+                            text = errorMessage,
                             color = MaterialTheme.colorScheme.error,
                             style = MaterialTheme.typography.bodySmall
                         )
@@ -179,9 +173,15 @@ fun PercentageCard(book: dbBook, onUpdate: (Int) -> Unit) {
             Button(
                 onClick = {
                     val pages = readPagesInput.toIntOrNull() ?: 0
-                    if (!inputError && pages > 0) {
-                        onUpdate(pages)
+                    if (pages <= 0) {
+                        errorMessage = "Please input integer greater than 0"
+                        return@Button
                     }
+                    if (pages > totalPages) {
+                        errorMessage = "Page can't be greater than total pages ($totalPages)"
+                        return@Button
+                    }
+                    onUpdate(pages)
                 },
                 modifier = Modifier.align(Alignment.End)
             ) {
@@ -233,7 +233,6 @@ fun RatingView(book: dbBook, onUpdate: (Int) -> Unit) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CriticalPointsSection(book: dbBook, navController: NavController, viewModel: BookViewModel) {
     val criticalPoints = book.criticalPoints ?: emptyList()
@@ -253,7 +252,6 @@ fun CriticalPointsSection(book: dbBook, navController: NavController, viewModel:
             }
         }
         Spacer(modifier = Modifier.height(8.dp))
-        // 遍历显示每个关键点的 Card，并转换为 UI 模型
         criticalPoints.forEach { cp ->
             CriticalPointCard(
                 criticalPoint = cp.toUiModel(),

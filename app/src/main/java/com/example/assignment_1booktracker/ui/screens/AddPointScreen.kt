@@ -22,6 +22,8 @@ fun AddPointScreen(
     var pointText by remember { mutableStateOf("") }
     var pageText by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
+    // 获取当前书本数据用于校验
+    val book = viewModel.getDbBookById(bookId)
 
     Scaffold(
         topBar = {
@@ -68,6 +70,10 @@ fun AddPointScreen(
                     }
                     if (pageNumber == null || pageNumber <= 0) {
                         errorMessage = "Page must be an integer greater than 0."
+                        return@Button
+                    }
+                    if (book != null && pageNumber > book.totalPages) {
+                        errorMessage = "Page can't be greater than total pages (${book.totalPages})"
                         return@Button
                     }
                     val newPoint = CriticalPoint(id = 0, text = pointText, page = pageNumber)

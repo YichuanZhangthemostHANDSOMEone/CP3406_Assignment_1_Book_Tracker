@@ -21,14 +21,24 @@ fun EditPointScreen(
     pointId: Int,
     viewModel: BookViewModel = viewModel(factory = BookViewModel.Factory)
 ) {
-    // 从 ViewModel 获取当前书籍数据（书籍中 criticalPoints 为 List<DataCriticalPoint>）
-    val book = viewModel.getDbBookById(bookId)
-    // 查找对应的关键点，并转换为 UI 模型 CriticalPoint
+    // 通过观察 dbUiState 来获取当前书本数据（异步加载）
+    val dbState by viewModel.dbUiState.collectAsState()
+    val book = (dbState as? DbBookUiState.Success)?.books?.find { it.id == bookId }
+    // 从获取到的书本中查找对应 critical point，并转换为 UI 模型
     val existingPointUi = book?.criticalPoints?.find { it.id == pointId }?.toUiModel()
-    // 初始化文本输入框的状态，若不存在则为空字符串
-    var pointText by remember { mutableStateOf(existingPointUi?.text ?: "") }
-    var pageText by remember { mutableStateOf(existingPointUi?.page?.toString() ?: "") }
+
+    // 使用可变状态保存输入框内容，初始值为空
+    var pointText by remember { mutableStateOf("") }
+    var pageText by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
+
+    // 当 existingPointUi 更新后，更新输入框的初始内容
+    LaunchedEffect(existingPointUi) {
+        if (existingPointUi != null) {
+            pointText = existingPointUi.text
+            pageText = existingPointUi.page.toString()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -48,6 +58,7 @@ fun EditPointScreen(
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
+            // 输入框加载原始 critical point 文本，可编辑
             OutlinedTextField(
                 value = pointText,
                 onValueChange = { pointText = it },
@@ -55,6 +66,7 @@ fun EditPointScreen(
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(16.dp))
+            // 输入框加载原始页码，可编辑
             OutlinedTextField(
                 value = pageText,
                 onValueChange = { pageText = it },
@@ -67,7 +79,7 @@ fun EditPointScreen(
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = {
-                    // 校验关键点文本的单词数不得超过5个
+                    // 校验：critical point 文本不得超过 5 个单词
                     val wordCount = pointText.trim().split("\\s+".toRegex()).filter { it.isNotEmpty() }.size
                     val pageNumber = pageText.toIntOrNull()
                     if (wordCount > 5) {
@@ -78,7 +90,12 @@ fun EditPointScreen(
                         errorMessage = "Page must be an integer greater than 0."
                         return@Button
                     }
-                    // 更新 UI 模型数据，注意：existingPointUi 为 UI 模型 CriticalPoint
+                    // 增加校验：输入页数不能大于书本 totalPages
+                    if (book != null && pageNumber > book.totalPages) {
+                        errorMessage = "Page can't be greater than total pages (${book.totalPages})"
+                        return@Button
+                    }
+                    // 构造更新后的 CriticalPoint UI 模型
                     val updatedPointUi: CriticalPoint? = existingPointUi?.copy(
                         text = pointText,
                         page = pageNumber
