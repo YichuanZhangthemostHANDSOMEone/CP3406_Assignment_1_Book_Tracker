@@ -1,4 +1,3 @@
-// LibraryScreen.kt
 package com.example.assignment_1booktracker.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
@@ -25,7 +24,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -51,7 +49,7 @@ fun LibraryScreen(
         is DbBookUiState.Success -> (dbState as DbBookUiState.Success).books
         else -> emptyList()
     }
-    // 根据搜索文本过滤书本（过滤规则在 filterBooks 中定义，特殊关键字处理不变）
+    // 根据搜索文本过滤书本，当搜索关键词为 "recent added" 时，返回最新加入的5本书
     val filteredBooks = filterBooks(allBooks, searchText)
 
     Scaffold(
@@ -142,7 +140,6 @@ fun LibraryScreen(
                 }
             }
 
-
             if (!isSearchOverlayVisible) {
                 Box(
                     modifier = Modifier
@@ -161,14 +158,10 @@ fun LibraryScreen(
                 }
             }
 
-
             if (isSearchOverlayVisible) {
                 SearchOverlay(
                     searchText = searchText,
-                    onSearchTextChange = {
-                        searchText = it
-                        searchPerformed = false // 每次输入重置为显示实时建议
-                    },
+                    onSearchTextChange = { searchText = it },
                     searchPerformed = searchPerformed,
                     onSearchButtonClick = {
                         if (searchText.isNotEmpty()) {
@@ -195,116 +188,17 @@ fun LibraryScreen(
     }
 }
 
-
-@Composable
-fun SearchOverlay(
-    searchText: String,
-    onSearchTextChange: (String) -> Unit,
-    searchPerformed: Boolean,
-    onSearchButtonClick: () -> Unit,
-    filteredBooks: List<dbBook>,
-    onDismiss: () -> Unit,
-    navController: NavController,
-    onSuggestionClicked: (dbBook) -> Unit
-) {
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.3f))
-            .clickable { onDismiss() }
-    ) {
-
-        val verticalOffset by animateDpAsState(
-            targetValue = 60.dp,
-            animationSpec = tween(durationMillis = 500)
-        )
-
-
-        AnimatedVisibility(visible = true) {
-            Card(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .offset(y = verticalOffset)
-                    .padding(horizontal = 16.dp)
-                    .clickable(enabled = false) { },
-                elevation = CardDefaults.cardElevation(8.dp)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .background(MaterialTheme.colorScheme.background)
-                        .padding(16.dp)
-                ) {
-                    // 搜索输入行
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        TextField(
-                            value = searchText,
-                            onValueChange = onSearchTextChange,
-                            placeholder = { Text("搜索书名、作者或关键点") },
-                            modifier = Modifier.weight(1f)
-                        )
-                        IconButton(onClick = onSearchButtonClick) {
-                            Icon(
-                                imageVector = Icons.Default.Search,
-                                contentDescription = "搜索"
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    if (searchText.isNotEmpty()) {
-                        if (!searchPerformed) {
-                            // 实时建议模式：仅展示匹配的书名（文本列表形式）
-                            LazyColumn {
-                                items(filteredBooks) { book ->
-                                    Text(
-                                        text = book.name,
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clickable { onSuggestionClicked(book) }
-                                            .padding(vertical = 8.dp)
-                                    )
-                                }
-                            }
-                        } else {
-                            // 搜索按钮点击后：以两列卡片形式展示搜索结果
-                            LazyVerticalGrid(
-                                columns = GridCells.Fixed(2),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .heightIn(max = 500.dp),
-                                contentPadding = PaddingValues(8.dp)
-                            ) {
-                                items(filteredBooks) { book ->
-                                    val uiBook = UIBook(
-                                        id = book.id ?: 0,
-                                        imageUrl = book.image,
-                                        leftText = book.name,
-                                        rightText = ""
-                                    )
-                                    LibraryCardView(
-                                        uiBook = uiBook,
-                                        navController = navController,
-                                        modifier = Modifier
-                                            .padding(4.dp)
-                                            .fillMaxWidth()
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-
+/**
+ * 过滤书籍列表：
+ *   - 当查询条件为 "recent added" 时，返回所有书中按 id 倒序排列的前5本书；
+ *   - 否则按书名、作者、类别以及关键点文本进行搜索；
+ *   - 如果上述搜索均无结果，再依据 "unfinish"、"unread"、"finish" 等关键字过滤。
+ */
 fun filterBooks(books: List<dbBook>, query: String): List<dbBook> {
-    val lowerQuery = query.lowercase()
+    val lowerQuery = query.lowercase().trim()
+    if (lowerQuery == "recent added") {
+        return books.sortedByDescending { it.id ?: 0 }.take(5)
+    }
     val matched = books.filter { book ->
         book.name.lowercase().contains(lowerQuery) ||
                 book.author.lowercase().contains(lowerQuery) ||
@@ -323,7 +217,6 @@ fun filterBooks(books: List<dbBook>, query: String): List<dbBook> {
         else -> emptyList()
     }
 }
-
 
 @Composable
 fun LibraryCardView(
@@ -373,7 +266,6 @@ fun LibraryCardView(
     }
 }
 
-// 小浮动按钮：点击后跳转到添加书籍页面。
 @Composable
 fun SmallButton(onClick: () -> Unit) {
     SmallFloatingActionButton(
@@ -382,5 +274,154 @@ fun SmallButton(onClick: () -> Unit) {
         contentColor = MaterialTheme.colorScheme.secondary
     ) {
         Icon(Icons.Filled.Add, contentDescription = "Add Book")
+    }
+}
+
+/**
+ * SearchOverlay 增加了标签区域，在 Card 顶部显示 "TAGS:" 和四个按钮，
+ * 点击按钮将对应的搜索关键词填入搜索框中。
+ * 如果搜索结果为空，则在下方显示 "No matched book found"。
+ */
+@Composable
+fun SearchOverlay(
+    searchText: String,
+    onSearchTextChange: (String) -> Unit,
+    searchPerformed: Boolean,
+    onSearchButtonClick: () -> Unit,
+    filteredBooks: List<dbBook>,
+    onDismiss: () -> Unit,
+    navController: NavController,
+    onSuggestionClicked: (dbBook) -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.3f))
+            .clickable { onDismiss() }
+    ) {
+        val verticalOffset by animateDpAsState(
+            targetValue = 60.dp,
+            animationSpec = tween(durationMillis = 500)
+        )
+        AnimatedVisibility(visible = true) {
+            Card(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .offset(y = verticalOffset)
+                    .padding(horizontal = 16.dp)
+                    .clickable(enabled = false) { },
+                elevation = CardDefaults.cardElevation(8.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.background)
+                        .padding(16.dp)
+                ) {
+                    // 标签区域
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(text = "TAGS:", style = MaterialTheme.typography.bodyLarge)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        TagButton(label = "recent added") { onSearchTextChange("recent added") }
+                        Spacer(modifier = Modifier.width(4.dp))
+                        TagButton(label = "unfinish") { onSearchTextChange("unfinish") }
+                        Spacer(modifier = Modifier.width(4.dp))
+                        TagButton(label = "unread") { onSearchTextChange("unread") }
+                        Spacer(modifier = Modifier.width(4.dp))
+                        TagButton(label = "finish") { onSearchTextChange("finish") }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    // 搜索输入行
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        TextField(
+                            value = searchText,
+                            onValueChange = onSearchTextChange,
+                            placeholder = { Text("Search for book name, author, category, critical points or preset tags") },
+                            modifier = Modifier.weight(1f)
+                        )
+                        IconButton(onClick = onSearchButtonClick) {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = "搜索"
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    // 展示搜索结果区域
+                    if (searchText.isNotEmpty()) {
+                        if (filteredBooks.isEmpty()) {
+                            // 当无匹配结果时显示提示文本
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 16.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("No matched book found")
+                            }
+                        } else {
+                            if (!searchPerformed) {
+                                // 实时建议模式：以 LazyColumn 形式展示列表
+                                LazyColumn {
+                                    items(filteredBooks) { book ->
+                                        Text(
+                                            text = book.name,
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clickable { onSuggestionClicked(book) }
+                                                .padding(vertical = 8.dp)
+                                        )
+                                    }
+                                }
+                            } else {
+                                // 点击搜索按钮后：以两列卡片形式展示搜索结果
+                                LazyVerticalGrid(
+                                    columns = GridCells.Fixed(2),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .heightIn(max = 500.dp),
+                                    contentPadding = PaddingValues(8.dp)
+                                ) {
+                                    items(filteredBooks) { book ->
+                                        val uiBook = UIBook(
+                                            id = book.id ?: 0,
+                                            imageUrl = book.image,
+                                            leftText = book.name,
+                                            rightText = ""
+                                        )
+                                        LibraryCardView(
+                                            uiBook = uiBook,
+                                            navController = navController,
+                                            modifier = Modifier
+                                                .padding(4.dp)
+                                                .fillMaxWidth()
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * TagButton 组件：用于显示标签按钮，点击后执行 onTagClick
+ */
+@Composable
+fun TagButton(label: String, onTagClick: () -> Unit) {
+    TextButton(
+        onClick = onTagClick,
+        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+    ) {
+        Text(text = label)
     }
 }
