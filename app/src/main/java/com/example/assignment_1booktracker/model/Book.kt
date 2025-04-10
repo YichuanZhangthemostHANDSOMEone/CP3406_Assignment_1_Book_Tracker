@@ -13,4 +13,5 @@ data class Book(
     @SerialName("rate") val rate: String,
     @SerialName("reason") val reason: String,
     @SerialName("baseon") val baseon: String,
+    @SerialName("totalPages") val totalPages: String,
 )

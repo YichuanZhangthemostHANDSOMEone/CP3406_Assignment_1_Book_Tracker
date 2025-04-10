@@ -23,4 +23,7 @@ interface BookDao {
 
     @Delete
     suspend fun deleteBook(book: dbBook)
+
+    @Query("SELECT * FROM dbBook ORDER BY id DESC LIMIT 1")
+    fun getLatestDbBook(): Flow<dbBook?>
 }

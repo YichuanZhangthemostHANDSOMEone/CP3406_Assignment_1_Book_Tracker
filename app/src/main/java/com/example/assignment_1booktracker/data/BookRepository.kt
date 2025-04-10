@@ -16,6 +16,7 @@ interface DatabaseBookRepository {
     suspend fun addDbBook(book: dbBook)
     suspend fun updateDbBook(book: dbBook)
     suspend fun deleteDbBook(book: dbBook)
+    fun getLatestDbBookFlow(): Flow<dbBook?>
 }
 
 // Network相关操作接口
@@ -77,6 +78,8 @@ class DatabaseBookRepositoryImpl(
             Log.e("DatabaseRepo", "删除书籍失败: ID=${book.id}", e)
         }
     }
+
+    override fun getLatestDbBookFlow(): Flow<dbBook?> = bookDao.getLatestDbBook()
 }
 
 // 网络Repository实现

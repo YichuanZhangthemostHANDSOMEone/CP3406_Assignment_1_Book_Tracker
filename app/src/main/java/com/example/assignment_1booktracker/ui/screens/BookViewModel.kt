@@ -44,14 +44,27 @@ class BookViewModel(
     private val _networkUiState = MutableStateFlow<NetworkBookUiState>(NetworkBookUiState.Loading)
     val networkUiState: StateFlow<NetworkBookUiState> = _networkUiState
 
+    // 新增：用于存储最新插入的书籍
+    private val _latestBook = MutableStateFlow<dbBook?>(null)
+    val latestBook: StateFlow<dbBook?> = _latestBook
+
     init {
+        // 监听全部数据的 Flow
         viewModelScope.launch {
             databaseRepo.getDbBooksFlow().collect { books ->
                 _dbUiState.value = DbBookUiState.Success(books)
                 Log.d("BookViewModel", "Database books loaded: ${books.size}")
             }
         }
+        // 监听网络数据
         fetchNetworkBooks()
+
+        viewModelScope.launch {
+            databaseRepo.getLatestDbBookFlow().collect { book ->
+                _latestBook.value = book
+                Log.d("BookViewModel", "Latest book updated: ${book?.name}")
+            }
+        }
     }
 
     private fun fetchNetworkBooks() {
@@ -101,16 +114,11 @@ class BookViewModel(
         }
     }
 
-    // 修改后的新增关键点方法：
-    // 接收 UI 层的 CriticalPoint 类型，然后转换成 DataCriticalPoint
     fun addCriticalPoint(bookId: Int, newPoint: CriticalPoint) = viewModelScope.launch {
         databaseRepo.getDbBookById(bookId)?.let { book ->
             val newList = book.criticalPoints?.toMutableList() ?: mutableListOf()
-            // 自动生成新的关键点 id，取现有最大 id+1
             val newId = (newList.maxOfOrNull { it.id } ?: 0) + 1
-            // 使用 UI 层的 newPoint 并设置新的 id
             val pointWithId = newPoint.copy(id = newId)
-            // 转换为数据层的 DataCriticalPoint
             val dataPoint = DataCriticalPoint(
                 id = pointWithId.id,
                 text = pointWithId.text,
@@ -122,8 +130,6 @@ class BookViewModel(
         }
     }
 
-    // 修改后的更新关键点方法：
-    // 接收 UI 层的 CriticalPoint 类型，并转换成 DataCriticalPoint
     fun updateCriticalPoint(bookId: Int, updatedPoint: CriticalPoint) = viewModelScope.launch {
         databaseRepo.getDbBookById(bookId)?.let { book ->
             val newList = book.criticalPoints?.map {
