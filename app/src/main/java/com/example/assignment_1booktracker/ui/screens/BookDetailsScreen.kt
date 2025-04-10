@@ -156,13 +156,13 @@ fun PercentageCard(book: dbBook, onUpdate: (Int) -> Unit) {
                             val parsed = it.toIntOrNull() ?: 0
                             inputError = parsed <= 0
                         },
-                        label = { Text("已读页数") },
+                        label = { Text("Read Pages") },
                         isError = inputError,
                         modifier = Modifier.fillMaxWidth()
                     )
                     if (inputError) {
                         Text(
-                            "请输入大于0的整数",
+                            "Please input integer greater than 0",
                             color = MaterialTheme.colorScheme.error,
                             style = MaterialTheme.typography.bodySmall
                         )
@@ -170,7 +170,7 @@ fun PercentageCard(book: dbBook, onUpdate: (Int) -> Unit) {
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(
-                    text = "总页数: $totalPages",
+                    text = "Total Pages: $totalPages",
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.weight(1f)
                 )
@@ -211,7 +211,7 @@ fun RatingView(book: dbBook, onUpdate: (Int) -> Unit) {
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("评分：", style = MaterialTheme.typography.titleLarge)
+            Text("Rating：", style = MaterialTheme.typography.titleLarge)
             Spacer(Modifier.width(8.dp))
             Slider(
                 value = rating.toFloat(),
@@ -227,7 +227,7 @@ fun RatingView(book: dbBook, onUpdate: (Int) -> Unit) {
             )
             Spacer(Modifier.width(8.dp))
             Button(onClick = { onUpdate(rating) }) {
-                Text("保存评分")
+                Text("Save Rating")
             }
         }
     }

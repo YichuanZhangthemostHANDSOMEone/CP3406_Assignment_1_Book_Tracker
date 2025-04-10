@@ -135,9 +135,9 @@ fun AddBookScreen(
                 } else {
                     // 根据不同缺失项分别给出提示
                     if (imageUri.value == null) {
-                        Toast.makeText(context, "请选择书籍封面图片", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Please select an cover image", Toast.LENGTH_SHORT).show()
                     } else {
-                        Toast.makeText(context, "请完整填写所有信息，且总页数必须大于0", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Please complete all information, total page must be greater than 0", Toast.LENGTH_SHORT).show()
                     }
                 }
             },

@@ -171,7 +171,7 @@ fun RecDetailInformation(book: com.example.assignment_1booktracker.model.Book) {
                 book.baseon ?: "",
                 style = MaterialTheme.typography.bodyLarge.copy(fontStyle = FontStyle.Italic),
                 modifier = Modifier
-                    .padding(start = 5.dp)
+                    .padding(start = 5.dp, bottom = 5.dp)
                     .alignByBaseline()
             )
         }

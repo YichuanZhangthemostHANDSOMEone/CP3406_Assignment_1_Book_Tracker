@@ -98,7 +98,7 @@ fun LibraryScreen(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(vertical = 8.dp)
                     ) {
-                        // 整体标题区域
+
                         item {
                             Box(
                                 modifier = Modifier
@@ -142,7 +142,7 @@ fun LibraryScreen(
                 }
             }
 
-            // 顶部右上角始终显示的搜索图标，当悬浮层未展开时显示
+
             if (!isSearchOverlayVisible) {
                 Box(
                     modifier = Modifier
@@ -161,7 +161,7 @@ fun LibraryScreen(
                 }
             }
 
-            // 搜索悬浮层：覆盖整个屏幕（半透明背景），点击背景区域可收回
+
             if (isSearchOverlayVisible) {
                 SearchOverlay(
                     searchText = searchText,
@@ -195,8 +195,7 @@ fun LibraryScreen(
     }
 }
 
-// 搜索悬浮层：带平滑下移动画，点击背景区域收起；内部根据 searchPerformed 显示两种不同展示模式。
-// 当 searchPerformed 为 false 时，展示实时建议列表（LazyColumn 显示匹配书名）；为 true 时，以两列卡片展示搜索结果。
+
 @Composable
 fun SearchOverlay(
     searchText: String,
@@ -208,20 +207,20 @@ fun SearchOverlay(
     navController: NavController,
     onSuggestionClicked: (dbBook) -> Unit
 ) {
-    // 外层全屏遮罩：半透明背景，点击背景收起悬浮层
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black.copy(alpha = 0.3f))
             .clickable { onDismiss() }
     ) {
-        // 使用动画实现悬浮层平滑下移（目标位移 60.dp，动画持续 300ms）
+
         val verticalOffset by animateDpAsState(
             targetValue = 60.dp,
-            animationSpec = tween(durationMillis = 300)
+            animationSpec = tween(durationMillis = 500)
         )
 
-        // 内部 Card 区域防止点击穿透（clickable(enabled=false) 拦截背景点击）
+
         AnimatedVisibility(visible = true) {
             Card(
                 modifier = Modifier
