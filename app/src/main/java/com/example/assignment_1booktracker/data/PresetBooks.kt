@@ -91,7 +91,7 @@ object PresetBooks {
         val image: String,
         val category: String,
         val totalPages: Int,
-        val criticalPoints: List<DataCriticalPoint>, // 修改为List<DataCriticalPoint>
+        val criticalPoints: List<DataCriticalPoint>,
         val review: String
     )
 }
