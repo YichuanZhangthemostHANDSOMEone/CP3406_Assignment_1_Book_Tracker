@@ -18,7 +18,6 @@ interface AppContainer {
 class DefaultAppContainer(private val application: Application) : AppContainer {
     private val baseUrl = "https://yichuanzhangthemosthandsomeone.github.io/Assignment/"
 
-    // region 网络相关配置
     private val jsonFormat = Json { ignoreUnknownKeys = true }
 
     private val retrofit: Retrofit = Retrofit.Builder()
@@ -29,9 +28,7 @@ class DefaultAppContainer(private val application: Application) : AppContainer {
     private val bookApiService: BookApiService by lazy {
         retrofit.create(BookApiService::class.java)
     }
-    // endregion
 
-    // region 数据库配置
     private val database: AppDatabase by lazy {
         AppDatabase.getDatabase(application, CoroutineScope(Dispatchers.IO))
     }
@@ -43,5 +40,4 @@ class DefaultAppContainer(private val application: Application) : AppContainer {
     override val networkRepository: NetworkBookRepository by lazy {
         NetworkBookRepositoryImpl(bookApiService)
     }
-    // endregion
 }

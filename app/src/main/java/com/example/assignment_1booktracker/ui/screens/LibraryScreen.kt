@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.assignment_1booktracker.data.dbBook
@@ -111,11 +112,10 @@ fun LibraryScreen(
                                 )
                             }
                         }
-                        // 遍历每个 category 分组展示书籍卡片
                         groupedBooks.forEach { (category, booksInCategory) ->
                             item {
                                 Text(
-                                    text = category,
+                                    text = category.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() },
                                     style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
                                     modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 0.dp)
                                 )
@@ -136,6 +136,7 @@ fun LibraryScreen(
                                 }
                             }
                         }
+                        item{Spacer(modifier = Modifier.height(50.dp))}
                     }
                 }
             }
@@ -188,12 +189,7 @@ fun LibraryScreen(
     }
 }
 
-/**
- * 过滤书籍列表：
- *   - 当查询条件为 "recent added" 时，返回所有书中按 id 倒序排列的前5本书；
- *   - 否则按书名、作者、类别以及关键点文本进行搜索；
- *   - 如果上述搜索均无结果，再依据 "unfinish"、"unread"、"finish" 等关键字过滤。
- */
+
 fun filterBooks(books: List<dbBook>, query: String): List<dbBook> {
     val lowerQuery = query.lowercase().trim()
     if (lowerQuery == "recent added") {
@@ -259,8 +255,19 @@ fun LibraryCardView(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = uiBook.leftText, style = MaterialTheme.typography.bodyMedium)
-                Text(text = uiBook.rightText, style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    text = uiBook.leftText,
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = uiBook.rightText,
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
         }
     }
@@ -277,11 +284,7 @@ fun SmallButton(onClick: () -> Unit) {
     }
 }
 
-/**
- * SearchOverlay 增加了标签区域，在 Card 顶部显示 "TAGS:" 和四个按钮，
- * 点击按钮将对应的搜索关键词填入搜索框中。
- * 如果搜索结果为空，则在下方显示 "No matched book found"。
- */
+
 @Composable
 fun SearchOverlay(
     searchText: String,
@@ -341,7 +344,7 @@ fun SearchOverlay(
                         TextField(
                             value = searchText,
                             onValueChange = onSearchTextChange,
-                            placeholder = { Text("Search for book name, author, category, critical points or preset tags") },
+                            placeholder = { Text("Search by book name, author, category, critical points or preset tags") },
                             modifier = Modifier.weight(1f)
                         )
                         IconButton(onClick = onSearchButtonClick) {
@@ -413,9 +416,7 @@ fun SearchOverlay(
     }
 }
 
-/**
- * TagButton 组件：用于显示标签按钮，点击后执行 onTagClick
- */
+
 @Composable
 fun TagButton(label: String, onTagClick: () -> Unit) {
     TextButton(
