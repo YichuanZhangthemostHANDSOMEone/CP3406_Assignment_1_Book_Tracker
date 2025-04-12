@@ -79,7 +79,16 @@ fun EditPointScreen(
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = {
-                    // 校验：critical point 文本不得超过 5 个单词
+                    if (pointText.isBlank()) {
+                        errorMessage = "Critical point cannot be empty."
+                        return@Button
+                    }
+                    if (pageText.isBlank()) {
+                        errorMessage = "Page cannot be empty."
+                        return@Button
+                    }
+
+                    // 接下来是已有的其他校验逻辑
                     val wordCount = pointText.trim().split("\\s+".toRegex()).filter { it.isNotEmpty() }.size
                     val pageNumber = pageText.toIntOrNull()
                     if (wordCount > 5) {
@@ -90,7 +99,6 @@ fun EditPointScreen(
                         errorMessage = "Page must be an integer greater than 0."
                         return@Button
                     }
-                    // 增加校验：输入页数不能大于书本 totalPages
                     if (book != null && pageNumber > book.totalPages) {
                         errorMessage = "Page can't be greater than total pages (${book.totalPages})"
                         return@Button

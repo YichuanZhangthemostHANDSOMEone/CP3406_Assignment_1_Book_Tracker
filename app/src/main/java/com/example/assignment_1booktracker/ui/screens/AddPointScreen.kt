@@ -12,6 +12,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.assignment_1booktracker.data.dbBook
 import com.example.assignment_1booktracker.ui.uiModels.CriticalPoint
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -25,8 +26,28 @@ fun AddPointScreen(
     var pointText by remember { mutableStateOf("") }
     var pageText by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
-    // 获取当前书本数据用于校验
-    val book = viewModel.getDbBookById(bookId)
+
+    val dbUiState by viewModel.dbUiState.collectAsState()
+    val book = when (dbUiState) {
+        is DbBookUiState.Success -> (dbUiState as DbBookUiState.Success).books.find { it.id == bookId }
+        else -> null
+    }
+
+    if (dbUiState is DbBookUiState.Loading) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+
+
+    if (book == null) {
+        LaunchedEffect(Unit) {
+            Toast.makeText(context, "Book data not found", Toast.LENGTH_SHORT).show()
+            navController.popBackStack()
+        }
+        return
+    }
 
     Scaffold(
         topBar = {
@@ -65,6 +86,20 @@ fun AddPointScreen(
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = {
+                    // 清除之前的错误信息
+                    errorMessage = ""
+
+                    // 检查输入是否为空
+                    if (pointText.isBlank()) {
+                        errorMessage = "Critical point cannot be empty."
+                        return@Button
+                    }
+                    if (pageText.isBlank()) {
+                        errorMessage = "Page cannot be empty."
+                        return@Button
+                    }
+
+                    // 校验单词数、页码格式及范围
                     val wordCount = pointText.trim().split("\\s+".toRegex()).filter { it.isNotEmpty() }.size
                     val pageNumber = pageText.toIntOrNull()
                     if (wordCount > 5) {
@@ -75,10 +110,12 @@ fun AddPointScreen(
                         errorMessage = "Page must be an integer greater than 0."
                         return@Button
                     }
-                    if (book != null && pageNumber > book.totalPages) {
+                    if (pageNumber > book.totalPages) {
                         errorMessage = "Page can't be greater than total pages (${book.totalPages})"
                         return@Button
                     }
+
+                    // 添加新的 CriticalPoint
                     val newPoint = CriticalPoint(id = 0, text = pointText, page = pageNumber)
                     viewModel.addCriticalPoint(bookId, newPoint)
                     Toast.makeText(context, "Critical point added successfully", Toast.LENGTH_SHORT).show()
