@@ -73,7 +73,7 @@ fun RecDetailContent(book: Book, viewModel: BookViewModel, navController: NavCon
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        item { Spacer(modifier = Modifier.height(10.dp)) }
+        item { Spacer(modifier = Modifier.height(50.dp)) }
         item {
             Box(
                 modifier = Modifier.fillMaxSize(),
@@ -85,7 +85,6 @@ fun RecDetailContent(book: Book, viewModel: BookViewModel, navController: NavCon
         item {
             RecDetailInformation(book = book)
         }
-        // Add to MyLibrary 按钮
         item {
             Button(
                 onClick = {
@@ -103,7 +102,6 @@ fun RecDetailContent(book: Book, viewModel: BookViewModel, navController: NavCon
                                 rating = 0,
                                 criticalPoints = emptyList(),
                                 cpPage = 0,
-                                review = book.reason
                             )
                             viewModel.addBook(dbBookToAdd)
                             Toast.makeText(context, "Book added to MyLibrary successfully", Toast.LENGTH_SHORT).show()

@@ -9,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -43,28 +44,45 @@ fun AddBookScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
+        verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // 预留摄像头区域的空间
         Spacer(modifier = Modifier.height(50.dp))
-        // 可点击的 Card，点击后启动图片选择器
+
         Card(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(150.dp)
-                .clickable { launcher.launch("image/*") },
+                // 只有当图片未选择时，才允许点击选择图片
+                .clickable(enabled = imageUri.value == null) {
+                    launcher.launch("image/*")
+                },
             elevation = CardDefaults.cardElevation(4.dp)
         ) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
+                // 显示用户选择的图片或添加图标
                 if (imageUri.value != null) {
-                    // 显示用户选择的图片
                     Image(
                         painter = rememberAsyncImagePainter(model = imageUri.value),
                         contentDescription = "Selected Image",
                         modifier = Modifier.fillMaxSize()
                     )
+                    // 增加一个位于右上角的清除按钮，用于清除当前选择的图片
+                    IconButton(
+                        onClick = { imageUri.value = null },
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Clear Image"
+                        )
+                    }
                 } else {
                     // 未选择图片时显示添加图标
                     Icon(
@@ -75,7 +93,9 @@ fun AddBookScreen(
                 }
             }
         }
+
         Spacer(modifier = Modifier.height(50.dp))
+
         // 输入书名
         InputField(
             label = "Book Name:",
@@ -84,6 +104,7 @@ fun AddBookScreen(
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(20.dp))
+
         // 输入作者
         InputField(
             label = "Author:",
@@ -92,6 +113,7 @@ fun AddBookScreen(
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(20.dp))
+
         // 输入分类
         InputField(
             label = "Category:",
@@ -100,6 +122,7 @@ fun AddBookScreen(
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(20.dp))
+
         // 输入总页数
         InputField(
             label = "Total Pages:",
@@ -107,7 +130,10 @@ fun AddBookScreen(
             onValueChange = { totalPages.value = it },
             modifier = Modifier.fillMaxWidth()
         )
+
+        // 使用 Column 的 weight 方法调整间距
         Spacer(modifier = Modifier.weight(1f))
+
         ElevatedButton(
             onClick = {
                 val trimmedBookName = bookName.value.trim()
@@ -145,6 +171,7 @@ fun AddBookScreen(
         }
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
