@@ -1,6 +1,7 @@
 package com.example.assignment_1booktracker.ui.screens
 
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
@@ -57,8 +58,6 @@ fun RecDetailsScreen(
                     Text("Recommendation not found")
                 }
             } else {
-                // 将 navController 与 viewModel 同时传入 RecDetailContent，
-                // 便于在添加后进行跳转
                 RecDetailContent(book = book, viewModel = viewModel, navController = navController)
             }
         }
@@ -86,16 +85,13 @@ fun RecDetailContent(book: Book, viewModel: BookViewModel, navController: NavCon
         item {
             RecDetailInformation(book = book)
         }
-        // 新增按钮项：“Add to MyLibrary”
+        // Add to MyLibrary 按钮
         item {
             Button(
                 onClick = {
                     coroutineScope.launch {
-                        // 下载图片并获取本地路径
                         val localImagePath = downloadImage(book.image, context)
                         if (localImagePath != null) {
-                            // 将网络 Book 转换为数据库实体 dbBook，
-                            // 同时使用下载后的本地图片路径
                             val dbBookToAdd = dbBook(
                                 image = localImagePath,
                                 name = book.name,
@@ -110,10 +106,10 @@ fun RecDetailContent(book: Book, viewModel: BookViewModel, navController: NavCon
                                 review = book.reason
                             )
                             viewModel.addBook(dbBookToAdd)
-                            // 添加成功后，跳转到 LibraryScreen 页面
+                            Toast.makeText(context, "Book added to MyLibrary successfully", Toast.LENGTH_SHORT).show()
                             navController.navigate(routes.Library.name)
                         } else {
-                            // 此处可以添加错误提示
+                            Toast.makeText(context, "Failed to download image", Toast.LENGTH_SHORT).show()
                         }
                     }
                 },
@@ -251,7 +247,6 @@ fun RecDetailInformation(book: Book) {
     }
 }
 
-
 suspend fun downloadImage(imageUrl: String, context: Context): String? {
     return withContext(Dispatchers.IO) {
         try {
@@ -260,7 +255,6 @@ suspend fun downloadImage(imageUrl: String, context: Context): String? {
             connection.doInput = true
             connection.connect()
             val input = connection.inputStream
-            // 构造文件名（可根据需要修改为其它目录）
             val filename = "downloaded_${System.currentTimeMillis()}.jpg"
             val file = File(context.cacheDir, filename)
             val output = FileOutputStream(file)

@@ -1,5 +1,6 @@
 package com.example.assignment_1booktracker.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
@@ -7,6 +8,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -19,6 +21,7 @@ fun AddPointScreen(
     bookId: Int,
     viewModel: BookViewModel = viewModel(factory = BookViewModel.Factory)
 ) {
+    val context = LocalContext.current
     var pointText by remember { mutableStateOf("") }
     var pageText by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
@@ -53,7 +56,7 @@ fun AddPointScreen(
             OutlinedTextField(
                 value = pageText,
                 onValueChange = { pageText = it },
-                label = { Text("Page (integer > 0)") },
+                label = { Text("Page") },
                 modifier = Modifier.fillMaxWidth()
             )
             if (errorMessage.isNotEmpty()) {
@@ -78,6 +81,7 @@ fun AddPointScreen(
                     }
                     val newPoint = CriticalPoint(id = 0, text = pointText, page = pageNumber)
                     viewModel.addCriticalPoint(bookId, newPoint)
+                    Toast.makeText(context, "Critical point added successfully", Toast.LENGTH_SHORT).show()
                     navController.popBackStack()
                 },
                 modifier = Modifier.align(Alignment.End)

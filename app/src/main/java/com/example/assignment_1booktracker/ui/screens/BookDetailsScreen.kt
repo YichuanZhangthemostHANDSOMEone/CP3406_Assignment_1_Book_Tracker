@@ -10,9 +10,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.widget.Toast
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.assignment_1booktracker.data.dbBook
@@ -25,6 +27,7 @@ fun BookDetailsScreen(
     bookId: Int,
     viewModel: BookViewModel = viewModel(factory = BookViewModel.Factory)
 ) {
+    val context = LocalContext.current
     // 监听数据库状态变化
     val dbState by viewModel.dbUiState.collectAsState()
     var currentBook by remember { mutableStateOf<dbBook?>(null) }
@@ -53,13 +56,14 @@ fun BookDetailsScreen(
 
 @Composable
 fun BookDetailContent(book: dbBook, navController: NavController, viewModel: BookViewModel) {
+    val context = LocalContext.current
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .statusBarsPadding() // 顶部预留安全区域
+            .statusBarsPadding()
             .padding(16.dp)
     ) {
-        // 顶部区域：显示书名，右上角删除按钮
+        // 顶部区域：显示书名和删除按钮
         item {
             Box(modifier = Modifier.fillMaxWidth()) {
                 Text(
@@ -72,6 +76,7 @@ fun BookDetailContent(book: dbBook, navController: NavController, viewModel: Boo
                 IconButton(
                     onClick = {
                         viewModel.deleteBook(book.id!!)
+                        Toast.makeText(context, "Book deleted successfully", Toast.LENGTH_SHORT).show()
                         navController.popBackStack()
                     },
                     modifier = Modifier.align(Alignment.TopEnd)
@@ -91,6 +96,7 @@ fun BookDetailContent(book: dbBook, navController: NavController, viewModel: Boo
                 book = book,
                 onUpdate = { pages ->
                     viewModel.updateReadPages(book.id!!, pages)
+                    Toast.makeText(context, "Progress updated successfully", Toast.LENGTH_SHORT).show()
                 }
             )
         }
@@ -101,22 +107,22 @@ fun BookDetailContent(book: dbBook, navController: NavController, viewModel: Boo
                 book = book,
                 onUpdate = { rating ->
                     viewModel.updateRating(book.id!!, rating)
+                    Toast.makeText(context, "Rating updated successfully", Toast.LENGTH_SHORT).show()
                 }
             )
         }
         item { Spacer(modifier = Modifier.height(16.dp)) }
-        // 分隔线：Rating与Critical Points之间
+        // 分隔线与关键点区域
         item { Divider(thickness = 1.dp) }
-        // 关键点区域
         item {
             CriticalPointsSection(book = book, navController = navController, viewModel = viewModel)
         }
-        // 分隔线：Critical Points与Review之间
         item { Divider(thickness = 1.dp) }
         // 书评区域
         item {
             PersonalReviewNew(book = book, onUpdate = { review ->
                 viewModel.updateReview(book.id!!, review)
+                Toast.makeText(context, "Review updated successfully", Toast.LENGTH_SHORT).show()
             })
         }
     }
@@ -124,12 +130,13 @@ fun BookDetailContent(book: dbBook, navController: NavController, viewModel: Boo
 
 @Composable
 fun PercentageCard(book: dbBook, onUpdate: (Int) -> Unit) {
-    // totalPages 为书的总页数，若 <= 0 则取 1 避免除 0
     val totalPages = if (book.totalPages <= 0) 1 else book.totalPages
     var readPagesInput by remember { mutableStateOf(book.readPages?.toString() ?: "") }
     var errorMessage by remember { mutableStateOf("") }
     val currentPages = readPagesInput.toIntOrNull() ?: 0
     val animatedProgress by animateFloatAsState(targetValue = currentPages.toFloat() / totalPages)
+
+    val context = LocalContext.current
 
     Card(
         modifier = Modifier
@@ -173,8 +180,8 @@ fun PercentageCard(book: dbBook, onUpdate: (Int) -> Unit) {
             Button(
                 onClick = {
                     val pages = readPagesInput.toIntOrNull() ?: 0
-                    if (pages <= 0) {
-                        errorMessage = "Please input integer greater than 0"
+                    if (pages < 0) {
+                        errorMessage = "Please input integer > 0"
                         return@Button
                     }
                     if (pages > totalPages) {
@@ -236,6 +243,18 @@ fun RatingView(book: dbBook, onUpdate: (Int) -> Unit) {
 @Composable
 fun CriticalPointsSection(book: dbBook, navController: NavController, viewModel: BookViewModel) {
     val criticalPoints = book.criticalPoints ?: emptyList()
+    val context = LocalContext.current
+
+    // 监听删除状态变化
+    var deleteMessageShown by remember { mutableStateOf(false) }
+
+    LaunchedEffect(deleteMessageShown) {
+        if (deleteMessageShown) {
+            Toast.makeText(context, "Critical point deleted successfully", Toast.LENGTH_SHORT).show()
+            deleteMessageShown = false
+        }
+    }
+
     Column {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -255,7 +274,10 @@ fun CriticalPointsSection(book: dbBook, navController: NavController, viewModel:
         criticalPoints.forEach { cp ->
             CriticalPointCard(
                 criticalPoint = cp.toUiModel(),
-                onDelete = { viewModel.deleteCriticalPoint(book.id!!, cp.id) },
+                onDelete = {
+                    viewModel.deleteCriticalPoint(book.id!!, cp.id)
+                    deleteMessageShown = true // 触发 Toast 显示
+                },
                 onEdit = { navController.navigate("EditPoint/${book.id}/${cp.id}") }
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -301,6 +323,7 @@ fun PersonalReviewNew(book: dbBook, onUpdate: (String) -> Unit) {
     }
     if (showEditor) {
         ModalBottomSheet(onDismissRequest = { showEditor = false }) {
+            val context = LocalContext.current
             Column(Modifier.padding(16.dp)) {
                 Text(
                     text = "Edit Your Review",
@@ -326,6 +349,7 @@ fun PersonalReviewNew(book: dbBook, onUpdate: (String) -> Unit) {
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(onClick = {
                         onUpdate(reviewText)
+                        Toast.makeText(context, "Review updated successfully", Toast.LENGTH_SHORT).show()
                         showEditor = false
                     }) {
                         Text("Save")

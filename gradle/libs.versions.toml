@@ -16,6 +16,8 @@ okhttp3 = "4.11.0"
 navigationSafeArgsGenerator = "2.8.9"
 roomCommon = "2.6.1"
 roomKtx = "2.6.1"
+coreKtxVersion = "1.6.1"
+core = "1.48.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -41,6 +43,8 @@ okhttp3 = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp3" }
 androidx-navigation-safe-args-generator = { group = "androidx.navigation", name = "navigation-safe-args-generator", version.ref = "navigationSafeArgsGenerator" }
 androidx-room-common = { group = "androidx.room", name = "room-common", version.ref = "roomCommon" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
+core-ktx = { group = "androidx.test", name = "core-ktx", version.ref = "coreKtxVersion" }
+core = { group = "com.google.ar", name = "core", version.ref = "core" }
 
 
 [bundles]

@@ -110,7 +110,6 @@ fun AddBookScreen(
         Spacer(modifier = Modifier.weight(1f))
         ElevatedButton(
             onClick = {
-                // 使用 trim() 清除空格后再进行判断
                 val trimmedBookName = bookName.value.trim()
                 val trimmedAuthor = author.value.trim()
                 val trimmedCategory = category.value.trim()
@@ -122,7 +121,6 @@ fun AddBookScreen(
                     total > 0 &&
                     imageUri.value != null
                 ) {
-                    // 如果所有数据有效，则创建 dbBook 对象（其他字段使用默认值）
                     val newBook = dbBook(
                         image = imageUri.value!!,
                         name = trimmedBookName,
@@ -131,11 +129,11 @@ fun AddBookScreen(
                         totalPages = total
                     )
                     viewModel.addBook(newBook)
+                    Toast.makeText(context, "Book added successfully", Toast.LENGTH_SHORT).show()
                     navController.popBackStack()
                 } else {
-                    // 根据不同缺失项分别给出提示
                     if (imageUri.value == null) {
-                        Toast.makeText(context, "Please select an cover image", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Please select a cover image", Toast.LENGTH_SHORT).show()
                     } else {
                         Toast.makeText(context, "Please complete all information, total page must be greater than 0", Toast.LENGTH_SHORT).show()
                     }

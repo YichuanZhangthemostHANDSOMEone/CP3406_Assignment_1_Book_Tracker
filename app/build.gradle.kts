@@ -40,6 +40,12 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+    testOptions {
+        unitTests {
+            // 允许返回默认值，防止调用未实现的方法抛出错误
+            isReturnDefaultValues = true
+        }
+    }
     buildFeatures {
         compose = true
     }
@@ -48,6 +54,8 @@ android {
 
 dependencies {
 
+    implementation(libs.core.ktx)
+    implementation(libs.core)
     val room_version = "2.6.1" // 使用与之前建议一致的版本
     implementation("androidx.room:room-runtime:$room_version")
     ksp("androidx.room:room-compiler:$room_version") // 关键注解处理器
@@ -56,6 +64,9 @@ dependencies {
     ksp("com.github.bumptech.glide:compiler:4.15.1")
     implementation ("com.github.bumptech.glide:compose:1.0.0-beta01")
     implementation ("com.google.code.gson:gson:2.8.9")
+    implementation("androidx.core:core-ktx:1.9.0")
+    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("com.google.android.material:material:1.8.0")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -67,6 +78,17 @@ dependencies {
     implementation(libs.bundles.networking)
     implementation(libs.androidx.navigation.safe.args.generator)
     testImplementation(libs.junit)
+    testImplementation ("junit:junit:4.13.2")
+    testImplementation("org.robolectric:robolectric:4.8.2")
+    testImplementation ("androidx.test:core:1.4.0")
+    testImplementation ("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
+    testImplementation ("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
+    testImplementation ("org.mockito:mockito-core:4.8.0")
+    testImplementation ("org.mockito.kotlin:mockito-kotlin:4.0.0")
+    testImplementation ("androidx.arch.core:core-testing:2.1.0")
+    testImplementation ("org.robolectric:robolectric:4.8")
+
+
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
