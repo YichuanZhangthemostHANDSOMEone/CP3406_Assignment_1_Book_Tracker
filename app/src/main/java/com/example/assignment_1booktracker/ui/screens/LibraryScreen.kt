@@ -39,18 +39,16 @@ fun LibraryScreen(
     navController: NavController,
     viewModel: BookViewModel = androidx.lifecycle.viewmodel.compose.viewModel(factory = BookViewModel.Factory)
 ) {
-    // 搜索状态：搜索文本、是否显示悬浮层、是否点击了搜索按钮
+    //Search status: Search text, whether to display the floating layer, whether the search button has been clicked.
     var searchText by remember { mutableStateOf("") }
     var isSearchOverlayVisible by remember { mutableStateOf(false) }
     var searchPerformed by remember { mutableStateOf(false) }
 
-    // 从 ViewModel 获取数据库书籍数据
     val dbState by viewModel.dbUiState.collectAsState()
     val allBooks = when (dbState) {
         is DbBookUiState.Success -> (dbState as DbBookUiState.Success).books
         else -> emptyList()
     }
-    // 根据搜索文本过滤书本，当搜索关键词为 "recent added" 时，返回最新加入的5本书
     val filteredBooks = filterBooks(allBooks, searchText)
 
     Scaffold(
@@ -62,18 +60,17 @@ fun LibraryScreen(
         },
         floatingActionButton = {
             SmallButton {
-                // 跳转到添加书籍页面
                 navController.navigate(routes.AddBook.name)
             }
         }
     ) { paddingValues ->
-        // 使用 Box 进行层叠布局：底层为原有 LibraryScreen 内容，顶部悬浮层显示搜索控件
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // 原有 LibraryScreen 内容（保持按 category 分组展示）
+            //Keep the display categorized by category.
             when (dbState) {
                 is DbBookUiState.Loading -> {
                     Box(
@@ -234,7 +231,6 @@ fun LibraryCardView(
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            // 图片区域（占约90%高度）
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -350,7 +346,7 @@ fun SearchOverlay(
                         IconButton(onClick = onSearchButtonClick) {
                             Icon(
                                 imageVector = Icons.Default.Search,
-                                contentDescription = "搜索"
+                                contentDescription = "search"
                             )
                         }
                     }
@@ -369,7 +365,6 @@ fun SearchOverlay(
                             }
                         } else {
                             if (!searchPerformed) {
-                                // 实时建议模式：以 LazyColumn 形式展示列表
                                 LazyColumn {
                                     items(filteredBooks) { book ->
                                         Text(
@@ -383,7 +378,7 @@ fun SearchOverlay(
                                     }
                                 }
                             } else {
-                                // 点击搜索按钮后：以两列卡片形式展示搜索结果
+                                //After clicking the search button: The search results are displayed in two-column card format.
                                 LazyVerticalGrid(
                                     columns = GridCells.Fixed(2),
                                     modifier = Modifier

@@ -20,23 +20,22 @@ abstract class AppDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
-        // 将回调类移至伴生对象内部
         private class BookDatabaseCallback(
             private val scope: CoroutineScope
         ) : Callback() {
             override fun onCreate(db: SupportSQLiteDatabase) {
                 super.onCreate(db)
-                Log.d("DatabaseInit", "开始创建数据库表结构")
+                Log.d("DatabaseInit", "Start creating the structure of the database table.")
 
                 INSTANCE?.let { database ->
                     scope.launch {
                         try {
-                            Log.d("DatabaseInit", "开始插入初始数据")
+                            Log.d("DatabaseInit", "Start inserting the initial data.")
                             val bookDao = database.bookDao()
 
                             // 使用预设书籍数据
                             PresetBooks.list.forEach { preset ->
-                                Log.d("DatabaseInit", "插入默认书籍: ${preset.name}")
+                                Log.d("DatabaseInit", "Insert preset books: ${preset.name}")
                                 bookDao.insertBook(
                                     dbBook(
                                         name = preset.name,
@@ -52,9 +51,9 @@ abstract class AppDatabase : RoomDatabase() {
                                     )
                                 )
                             }
-                            Log.d("DatabaseInit", "成功插入${PresetBooks.list.size}本初始书籍")
+                            Log.d("DatabaseInit", "Successfully insert${PresetBooks.list.size}preset books")
                         } catch (e: Exception) {
-                            Log.e("DatabaseInit", "初始数据插入失败", e)
+                            Log.e("DatabaseInit", "Failed inserting preset books", e)
                         }
                     }
                 }
@@ -62,7 +61,7 @@ abstract class AppDatabase : RoomDatabase() {
 
             override fun onOpen(db: SupportSQLiteDatabase) {
                 super.onOpen(db)
-                Log.d("DatabaseInit", "数据库已打开")
+                Log.d("DatabaseInit", "Database is open")
             }
         }
 

@@ -28,7 +28,6 @@ fun BookDetailsScreen(
     viewModel: BookViewModel = viewModel(factory = BookViewModel.Factory)
 ) {
     val context = LocalContext.current
-    // 监听数据库状态变化
     val dbState by viewModel.dbUiState.collectAsState()
     var currentBook by remember { mutableStateOf<dbBook?>(null) }
 
@@ -63,7 +62,6 @@ fun BookDetailContent(book: dbBook, navController: NavController, viewModel: Boo
             .statusBarsPadding()
             .padding(16.dp)
     ) {
-        // 顶部区域：显示书名和删除按钮
         item {
             Box(modifier = Modifier.fillMaxWidth()) {
                 Text(
@@ -90,7 +88,6 @@ fun BookDetailContent(book: dbBook, navController: NavController, viewModel: Boo
             }
             Spacer(modifier = Modifier.height(16.dp))
         }
-        // 显示进度卡片
         item {
             PercentageCard(
                 book = book,
@@ -101,7 +98,6 @@ fun BookDetailContent(book: dbBook, navController: NavController, viewModel: Boo
             )
         }
         item { Spacer(modifier = Modifier.height(16.dp)) }
-        // 评分区域
         item {
             RatingView(
                 book = book,
@@ -112,13 +108,11 @@ fun BookDetailContent(book: dbBook, navController: NavController, viewModel: Boo
             )
         }
         item { Spacer(modifier = Modifier.height(16.dp)) }
-        // 分隔线与关键点区域
         item { Divider(thickness = 1.dp) }
         item {
             CriticalPointsSection(book = book, navController = navController, viewModel = viewModel)
         }
         item { Divider(thickness = 1.dp) }
-        // 书评区域
         item {
             PersonalReviewNew(book = book, onUpdate = { review ->
                 viewModel.updateReview(book.id!!, review)
@@ -245,7 +239,7 @@ fun CriticalPointsSection(book: dbBook, navController: NavController, viewModel:
     val criticalPoints = book.criticalPoints ?: emptyList()
     val context = LocalContext.current
 
-    // 监听删除状态变化
+    //Monitor changes in the deletion status
     var deleteMessageShown by remember { mutableStateOf(false) }
 
     LaunchedEffect(deleteMessageShown) {

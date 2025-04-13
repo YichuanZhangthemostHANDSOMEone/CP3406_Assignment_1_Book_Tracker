@@ -21,18 +21,17 @@ fun EditPointScreen(
     pointId: Int,
     viewModel: BookViewModel = viewModel(factory = BookViewModel.Factory)
 ) {
-    // 通过观察 dbUiState 来获取当前书本数据（异步加载）
+    //Obtain the current book data (asynchronously loaded) by observing dbUiState
     val dbState by viewModel.dbUiState.collectAsState()
     val book = (dbState as? DbBookUiState.Success)?.books?.find { it.id == bookId }
-    // 从获取到的书本中查找对应 critical point，并转换为 UI 模型
+    //Search for the corresponding critical point from the obtained books and convert them into UI models.
     val existingPointUi = book?.criticalPoints?.find { it.id == pointId }?.toUiModel()
 
-    // 使用可变状态保存输入框内容，初始值为空
     var pointText by remember { mutableStateOf("") }
     var pageText by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
 
-    // 当 existingPointUi 更新后，更新输入框的初始内容
+    //When the existingPointUi is updated, update the initial content of the input box.
     LaunchedEffect(existingPointUi) {
         if (existingPointUi != null) {
             pointText = existingPointUi.text
@@ -66,7 +65,6 @@ fun EditPointScreen(
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(16.dp))
-            // 输入框加载原始页码，可编辑
             OutlinedTextField(
                 value = pageText,
                 onValueChange = { pageText = it },
@@ -79,6 +77,7 @@ fun EditPointScreen(
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = {
+                    //error checking
                     if (pointText.isBlank()) {
                         errorMessage = "Critical point cannot be empty."
                         return@Button
@@ -87,8 +86,6 @@ fun EditPointScreen(
                         errorMessage = "Page cannot be empty."
                         return@Button
                     }
-
-                    // 接下来是已有的其他校验逻辑
                     val wordCount = pointText.trim().split("\\s+".toRegex()).filter { it.isNotEmpty() }.size
                     val pageNumber = pageText.toIntOrNull()
                     if (wordCount > 5) {
@@ -103,7 +100,7 @@ fun EditPointScreen(
                         errorMessage = "Page can't be greater than total pages (${book.totalPages})"
                         return@Button
                     }
-                    // 构造更新后的 CriticalPoint UI 模型
+                    //Construct the updated CriticalPoint UI model
                     val updatedPointUi: CriticalPoint? = existingPointUi?.copy(
                         text = pointText,
                         page = pageNumber

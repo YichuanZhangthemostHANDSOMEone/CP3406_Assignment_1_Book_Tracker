@@ -78,7 +78,7 @@ fun RecommendationsScreen(
                             )
                         }
                     }
-                    // 将推荐书籍按两列展示
+                    //Display the recommended books in two columns.
                     items(recommendedBooks.chunked(2)) { rowBooks ->
                         Row(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                             rowBooks.forEach { book ->

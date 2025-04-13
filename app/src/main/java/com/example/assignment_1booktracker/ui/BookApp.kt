@@ -27,15 +27,15 @@ fun BookAppNavigation(
         startDestination = routes.Library.name,
         modifier = modifier
     ) {
-        // 图书馆页面
+        //Library page
         composable(routes.Library.name) {
             LibraryScreen(navController)
         }
-        // 添加书籍页面
+        //Add Book Page
         composable(routes.AddBook.name) {
             AddBookScreen(navController)
         }
-        // 书籍详情页面，传递 bookId 参数
+        //The details page of the book, passing the bookId parameter
         composable(
             route = "${routes.BookDetails.name}/{bookId}",
             arguments = listOf(navArgument("bookId") { type = NavType.IntType })
@@ -45,7 +45,7 @@ fun BookAppNavigation(
                 bookId = backStackEntry.arguments?.getInt("bookId") ?: 0
             )
         }
-        // 添加关键点页面，传递 bookId 参数
+        //critical point page and pass the bookId parameter
         composable(
             route = "${routes.AddPoint.name}/{bookId}",
             arguments = listOf(navArgument("bookId") { type = NavType.IntType })
@@ -53,7 +53,6 @@ fun BookAppNavigation(
             val bookId = backStackEntry.arguments?.getInt("bookId") ?: 0
             AddPointScreen(navController, bookId)
         }
-        // 编辑关键点页面，传递 bookId 与 pointId 参数
         composable(
             route = "${routes.EditPoint.name}/{bookId}/{pointId}",
             arguments = listOf(
@@ -65,11 +64,10 @@ fun BookAppNavigation(
             val pointId = backStackEntry.arguments?.getInt("pointId") ?: 0
             EditPointScreen(navController, bookId, pointId)
         }
-        // 推荐页面
+        //Recommendation Page
         composable(routes.Recommendations.name) {
             RecommendationsScreen(navController)
         }
-        // 推荐详情页面，传递 recId 参数
         composable(
             route = "${routes.RecDetails.name}/{recId}",
             arguments = listOf(navArgument("recId") { type = NavType.IntType })

@@ -36,7 +36,7 @@ fun RecDetailsScreen(
     recId: Int?,
     viewModel: BookViewModel = viewModel(factory = BookViewModel.Factory)
 ) {
-    // 观察网络状态
+    //Monitor network status
     val networkState by viewModel.networkUiState.collectAsState()
     when (networkState) {
         is NetworkBookUiState.Loading -> {
@@ -51,7 +51,7 @@ fun RecDetailsScreen(
         }
         is NetworkBookUiState.Success -> {
             val books = (networkState as NetworkBookUiState.Success).books
-            // 根据 recId 查找对应书籍
+            //Find the corresponding book based on recId.
             val book = recId?.let { id -> books.find { it.id == id } }
             if (book == null) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

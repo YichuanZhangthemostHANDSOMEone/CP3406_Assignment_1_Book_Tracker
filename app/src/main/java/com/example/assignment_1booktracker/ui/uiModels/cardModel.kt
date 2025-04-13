@@ -7,7 +7,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import coil3.compose.rememberAsyncImagePainter
 
-// 定义一个用于 UI 展示的书籍数据模型（用于转换 model.Book 至 UI 显示）
+//Define a data model for books used for UI display (for converting model.Book to UI presentation)
 data class UIBook(
     val id: Int,
     val imageUrl: String,
@@ -20,21 +20,21 @@ data class UIBook(
 fun getImagePainter(imageUrl: String): Painter {
     val context = LocalContext.current
     return if (imageUrl.startsWith("android.resource://")) {
-        // 解析 URI 格式：android.resource://[package]/drawable/[resource_name]
+        //Parsing URI format: android.resource://[package]/drawable/[resource_name]
         val uri = Uri.parse(imageUrl)
         val segments = uri.pathSegments
         if (segments.size >= 2) {
-            val resName = segments[1]  // 第二段为资源名称
-            // 注意：使用当前应用包名来获取资源 id
+            val resName = segments[1]
+            //Note: Use the current application package name to obtain the resource ID.
             val resId = context.resources.getIdentifier(resName, "drawable", context.packageName)
             if (resId != 0) {
                 painterResource(id = resId)
             } else {
-                // 如果未能找到资源 id，则降级使用 Coil
+                //If the resource id cannot be found, then use Coil as a fallback option.
                 rememberAsyncImagePainter(model = imageUrl)
             }
         } else {
-            // 格式不符合预期，直接使用 Coil
+            //The format does not meet the expectations. Please use "Coil" directly.
             rememberAsyncImagePainter(model = imageUrl)
         }
     } else {

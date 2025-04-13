@@ -7,15 +7,15 @@ import androidx.room.PrimaryKey
 data class dbBook(
     @PrimaryKey(autoGenerate = true)
     val id: Int? = null,
-    val image: String,              // 封面图片路径或 URL
-    val name: String,               // 书名
-    val author: String,             // 作者
-    val category: String,           // 种类
-    val readPages: Int? = 0,         // 已读页数
-    val totalPages: Int,            // 总页数
-    val progress: Int? = 0,          // 进度百分比（整数）
-    val rating: Int? = null,            // 评分（满分 10）
-    val criticalPoints: List<DataCriticalPoint>? = emptyList(), // 关键点文本
-    val cpPage: Int? = null,        // 关键点所在页数
-    val review: String? = null      // 用户评论
+    val image: String,
+    val name: String,
+    val author: String,
+    val category: String,
+    val readPages: Int? = 0,
+    val totalPages: Int,
+    val progress: Int? = 0,
+    val rating: Int? = null,
+    val criticalPoints: List<DataCriticalPoint>? = emptyList(),
+    val cpPage: Int? = null,
+    val review: String? = null
 )

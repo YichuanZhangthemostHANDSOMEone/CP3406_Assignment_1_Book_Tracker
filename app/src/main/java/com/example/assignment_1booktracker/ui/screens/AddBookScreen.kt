@@ -28,13 +28,13 @@ fun AddBookScreen(
 ) {
     val context = LocalContext.current
 
-    // 状态变量用于存储用户输入
+
     val bookName = remember { mutableStateOf("") }
     val author = remember { mutableStateOf("") }
     val category = remember { mutableStateOf("") }
     val totalPages = remember { mutableStateOf("") }
 
-    // 封面图片：要求用户必须选择图片
+
     val imageUri = remember { mutableStateOf<String?>(null) }
     val launcher = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
         uri?.let { imageUri.value = it.toString() }
@@ -84,7 +84,6 @@ fun AddBookScreen(
                         )
                     }
                 } else {
-                    // 未选择图片时显示添加图标
                     Icon(
                         imageVector = Icons.Filled.Add,
                         contentDescription = "Add Image",
@@ -96,7 +95,7 @@ fun AddBookScreen(
 
         Spacer(modifier = Modifier.height(50.dp))
 
-        // 输入书名
+
         InputField(
             label = "Book Name:",
             value = bookName.value,
@@ -105,7 +104,7 @@ fun AddBookScreen(
         )
         Spacer(modifier = Modifier.height(20.dp))
 
-        // 输入作者
+
         InputField(
             label = "Author:",
             value = author.value,
@@ -114,7 +113,7 @@ fun AddBookScreen(
         )
         Spacer(modifier = Modifier.height(20.dp))
 
-        // 输入分类
+
         InputField(
             label = "Category:",
             value = category.value,
@@ -123,7 +122,7 @@ fun AddBookScreen(
         )
         Spacer(modifier = Modifier.height(20.dp))
 
-        // 输入总页数
+
         InputField(
             label = "Total Pages:",
             value = totalPages.value,
@@ -131,7 +130,7 @@ fun AddBookScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        // 使用 Column 的 weight 方法调整间距
+
         Spacer(modifier = Modifier.weight(1f))
 
         ElevatedButton(

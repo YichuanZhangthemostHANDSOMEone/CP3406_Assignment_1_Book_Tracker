@@ -27,10 +27,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             Assignment_1BookTrackerTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    // 使用 remember 来存储初始化状态
+                    //Use "remember" to store the initialization state.
                     var isInitialized by remember { mutableStateOf(false) }
 
-                    // 使用 LaunchedEffect 并切换到 IO 调度器执行耗时操作
+                    //Use LaunchedEffect and switch to the IO scheduler to execute time-consuming operations
                     LaunchedEffect(Unit) {
                         withContext(Dispatchers.IO) {
                             SharedBookData.initialize(application)
@@ -38,7 +38,7 @@ class MainActivity : ComponentActivity() {
                         isInitialized = true
                     }
 
-                    // 数据加载完成后显示主界面，否则显示 LoadingScreen
+                    //Once the data loading is completed, the main interface will be displayed; otherwise, the LoadingScreen will be shown.
                     if (isInitialized) {
                         BookAppNavigation(navController = rememberNavController())
                     } else {

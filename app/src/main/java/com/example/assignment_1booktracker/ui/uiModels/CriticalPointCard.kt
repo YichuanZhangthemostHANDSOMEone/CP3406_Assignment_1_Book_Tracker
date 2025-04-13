@@ -15,14 +15,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.assignment_1booktracker.data.DataCriticalPoint
 
-// UI 层的 CriticalPoint 模型
+//The CriticalPoint model of the UI layer
 data class CriticalPoint(
     val id: Int,
     val text: String,
     val page: Int
 )
 
-// 扩展函数：将 DataCriticalPoint 转换为 UI 模型 CriticalPoint
+//Extension function: Convert DataCriticalPoint to UI model CriticalPoint
 fun DataCriticalPoint.toUiModel(): CriticalPoint {
     return CriticalPoint(
         id = this.id,
@@ -33,7 +33,7 @@ fun DataCriticalPoint.toUiModel(): CriticalPoint {
 
 @Composable
 fun CriticalPointCard(
-    criticalPoint: CriticalPoint,  // 使用 UI 模型类型
+    criticalPoint: CriticalPoint,
     onDelete: () -> Unit,
     onEdit: () -> Unit
 ) {
@@ -48,7 +48,7 @@ fun CriticalPointCard(
                 .fillMaxSize()
                 .padding(8.dp)
         ) {
-            // 左侧：显示文本（关键点内容及页码）
+            //Left side: Display text (key points content and page numbers)
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -58,7 +58,7 @@ fun CriticalPointCard(
                 Text(text = criticalPoint.text, style = MaterialTheme.typography.bodyLarge)
                 Text(text = "Page: ${criticalPoint.page}", style = MaterialTheme.typography.bodyMedium)
             }
-            // 右侧：显示删除和编辑按钮
+            //On the right side: Display the delete and edit buttons
             Column(
                 verticalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxHeight()

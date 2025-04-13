@@ -13,7 +13,7 @@ import com.example.assignment_1booktracker.data.DatabaseBookRepository
 import com.example.assignment_1booktracker.data.NetworkBookRepository
 import com.example.assignment_1booktracker.data.dbBook
 import com.example.assignment_1booktracker.data.DataCriticalPoint
-import com.example.assignment_1booktracker.ui.uiModels.CriticalPoint  // UI模型
+import com.example.assignment_1booktracker.ui.uiModels.CriticalPoint
 import com.example.assignment_1booktracker.model.Book
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -38,27 +38,30 @@ class BookViewModel(
     private val databaseRepo: DatabaseBookRepository
 ) : AndroidViewModel(application) {
 
+    // StateFlow to hold the UI state for database books
     private val _dbUiState = MutableStateFlow<DbBookUiState>(DbBookUiState.Loading)
     val dbUiState: StateFlow<DbBookUiState> = _dbUiState
 
+    // StateFlow to hold the UI state for network books
     private val _networkUiState = MutableStateFlow<NetworkBookUiState>(NetworkBookUiState.Loading)
     val networkUiState: StateFlow<NetworkBookUiState> = _networkUiState
 
-    // 新增：用于存储最新插入的书籍
+    // Used for storing the latest inserted books.
     private val _latestBook = MutableStateFlow<dbBook?>(null)
     val latestBook: StateFlow<dbBook?> = _latestBook
 
     init {
-        // 监听全部数据的 Flow
+        // Monitors flow for database books and updates the UI state
         viewModelScope.launch {
             databaseRepo.getDbBooksFlow().collect { books ->
                 _dbUiState.value = DbBookUiState.Success(books)
                 Log.d("BookViewModel", "Database books loaded: ${books.size}")
             }
         }
-        // 监听网络数据
+        // Fetches network books and updates the UI state
         fetchNetworkBooks()
 
+        // Monitors flow for the latest database book and updates the UI state
         viewModelScope.launch {
             databaseRepo.getLatestDbBookFlow().collect { book ->
                 _latestBook.value = book
@@ -67,6 +70,7 @@ class BookViewModel(
         }
     }
 
+    // Fetches books from the network repository and updates the UI state
     private fun fetchNetworkBooks() {
         viewModelScope.launch {
             try {
@@ -80,6 +84,7 @@ class BookViewModel(
         }
     }
 
+    // Adds a new book to the database
     fun addBook(book: dbBook) = viewModelScope.launch {
         try {
             databaseRepo.addDbBook(book)
@@ -88,6 +93,7 @@ class BookViewModel(
         }
     }
 
+    // Updates the read pages of a book in the database
     fun updateReadPages(bookId: Int, readPages: Int) = viewModelScope.launch {
         try {
             databaseRepo.getDbBookById(bookId)?.let { book ->
@@ -103,6 +109,7 @@ class BookViewModel(
         }
     }
 
+    // Updates the rating of a book in the database
     fun updateRating(bookId: Int, rating: Int) = viewModelScope.launch {
         try {
             databaseRepo.getDbBookById(bookId)?.let { book ->
@@ -114,6 +121,7 @@ class BookViewModel(
         }
     }
 
+    // Adds a critical point to a book in the database
     fun addCriticalPoint(bookId: Int, newPoint: CriticalPoint) = viewModelScope.launch {
         databaseRepo.getDbBookById(bookId)?.let { book ->
             val newList = book.criticalPoints?.toMutableList() ?: mutableListOf()
@@ -130,6 +138,7 @@ class BookViewModel(
         }
     }
 
+    // Updates a critical point of a book in the database
     fun updateCriticalPoint(bookId: Int, updatedPoint: CriticalPoint) = viewModelScope.launch {
         databaseRepo.getDbBookById(bookId)?.let { book ->
             val newList = book.criticalPoints?.map {
@@ -152,6 +161,7 @@ class BookViewModel(
         }
     }
 
+    // Deletes a critical point from a book in the database
     fun deleteCriticalPoint(bookId: Int, pointId: Int) = viewModelScope.launch {
         databaseRepo.getDbBookById(bookId)?.let { book ->
             val newList = book.criticalPoints?.filter { it.id != pointId } ?: emptyList()
@@ -160,6 +170,7 @@ class BookViewModel(
         }
     }
 
+    // Updates the review of a book in the database
     fun updateReview(bookId: Int, review: String) = viewModelScope.launch {
         try {
             databaseRepo.getDbBookById(bookId)?.let { book ->
@@ -171,6 +182,7 @@ class BookViewModel(
         }
     }
 
+    // Deletes a book from the database
     fun deleteBook(bookId: Int) = viewModelScope.launch {
         try {
             databaseRepo.getDbBookById(bookId)?.let {
@@ -181,6 +193,7 @@ class BookViewModel(
         }
     }
 
+    // Retrieves a book by its ID from the database
     fun getDbBookById(bookId: Int): dbBook? {
         return when (val state = _dbUiState.value) {
             is DbBookUiState.Success -> state.books.find { it.id == bookId }
@@ -188,10 +201,12 @@ class BookViewModel(
         }
     }
 
+    // Calculates the reading progress of a book
     private fun calculateProgress(read: Int, total: Int): Int {
         return if (total > 0) ((read.toFloat() / total) * 100).toInt() else 0
     }
 
+    // Factory for creating instances of BookViewModel
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
